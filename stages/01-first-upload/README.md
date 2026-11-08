@@ -62,6 +62,9 @@ small transformer core is unpacked to int8 in PSRAM at boot, and the hot scratch
 sit in internal SRAM. Two CPU cores split the big matrix-vector products. See the comments
 at the top of `src/main.cpp` and the original project's README for the details.
 
+Note: stage 02 and later use a different partition layout. If you flash a later stage and
+then come back to this one, run `pio run -t upload_model` again before `pio run -t upload`.
+
 ## Done when
 A story is streaming on the screen, tapping starts a new one, and you have rebuilt the app
 with at least one change of your own.

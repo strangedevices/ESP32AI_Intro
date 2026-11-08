@@ -13,4 +13,9 @@ This is a PlatformIO project for the M5Stack CoreS3 / CoreS3 SE (ESP32-S3).
   `M5.Display` wraps back to the top when it reaches the bottom. Keep fixed elements
   (status bar, buttons) on the display itself. See `Reference Implementations/01-story-app`.
 - Keep each stage buildable on its own. Do not pull in ESP-IDF-only components.
+- Partitions: 01-story-app uses a custom table with a 1.5 MB app and a 15 MB model
+  partition. Stages 02+ use `default_16MB.csv` (6.5 MB app) because Wi-Fi + TLS alone is
+  about 1.5 MB. Do not try to fit Wi-Fi stages into the story app's table.
+- Stage 02's `src/ui.h` (status bar, scrolling log, button row) is the base for later
+  stages; copy it forward rather than reinventing it.
 - The user is learning; explain what you change in one or two lines and keep diffs small.
