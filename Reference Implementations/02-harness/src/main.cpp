@@ -74,7 +74,8 @@ static void internetTest() {
     ui::log("Test: begin failed"); return;
   }
   int code = http.GET();
-  ui::log("Test: HTTP %d in %lu ms (401 = TLS+internet OK)", code, millis() - t0);
+  if (code > 0) ui::log("Test: HTTP %d in %lu ms - TLS + internet OK", code, millis() - t0);
+  else          ui::log("Test: FAILED (%d) after %lu ms - no internet or DNS?", code, millis() - t0);
   http.end();
 }
 
@@ -111,6 +112,14 @@ void loop() {
       ui::log("WiFi: failed (%d) - check SSID/password, 2.4 GHz", (int)st);
     }
     updateStatusBar();
+  }
+  // Not connected after 10 s? Try again. Hotspots often refuse the first attempt
+  // right after a reset.
+  if (wantWifi && st != WL_CONNECTED && millis() - connectStart > 10000) {
+    ui::log("WiFi: no connection after 10 s, retrying");
+    WiFi.disconnect();
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    connectStart = millis();
   }
   // Refresh RSSI in the bar every few seconds while connected.
   static uint32_t lastBar = 0;

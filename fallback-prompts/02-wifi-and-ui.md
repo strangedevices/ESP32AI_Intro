@@ -8,7 +8,7 @@ M5Unified). include/secrets.h holds my hotspot credentials (do not print them). 
 1. Run `pio run` and fix any build error without changing include/secrets.h.
 2. Flash with `pio run -t upload` and watch `pio device monitor` for 20 seconds.
 3. Send the character `w` to the serial port to connect Wi-Fi, wait for "WiFi: connected",
-   then send `t` and tell me the HTTP status the Test reports. 401 means success.
+   then send `t` and tell me the HTTP status the Test reports. Any HTTP status means success.
 If Wi-Fi fails, list the likely causes (password, 2.4 GHz, captive portal) and stop.
 ```
 

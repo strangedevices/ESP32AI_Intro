@@ -30,8 +30,9 @@ partition. To go back to stage 01 later, run its `pio run -t upload_model` again
 ## Try it
 - Tap **WiFi**. The bar turns green with the IP address and signal strength. Tap again
   to disconnect.
-- Tap **Test**. It makes an HTTPS request to the ElevenLabs API. `HTTP 401` is the right
-  answer here: it means TLS and the internet work, and the server just wants an API key.
+- Tap **Test**. It makes an HTTPS request to the ElevenLabs API without a key. Any HTTP
+  status (404 or 401, typically under a second) means TLS and the internet work. "FAILED"
+  means the device has no route to the internet.
 - Tap **Clear** to clear the log.
 - Serial shortcuts: `w`, `t`, `c` do the same.
 
