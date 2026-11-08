@@ -106,7 +106,10 @@ Everything should say OK.
 3. Turn on your phone hotspot (2.4 GHz, WPA2, simple password with no spaces). Connect
    your laptop to it as well. Hotel Wi-Fi will not work for the device.
 4. In the `00-hello` folder, run `pio run -t upload` then `pio device monitor`. You should
-   see the hello screen on the device and an uptime counter in the terminal.
+   see the hello screen on the device and an uptime counter in the terminal. The device
+   appears as "USB Serial Device (COMx)" on Windows and `/dev/cu.usbmodem*` on a Mac;
+   PlatformIO finds it by itself. Uploading takes about 30 seconds.
+   The screen should show PSRAM 8192 KB, flash 16 MB, and SD card OK once a card is in.
 5. Have your ElevenLabs API key to hand.
 
 If the upload fails with "no serial port": hold the reset button on the CoreS3 for about
