@@ -10,10 +10,18 @@ static const int BAR_H = 28;     // status bar height
 static const int BTN_H = 52;     // button row height
 static int W = 240, H = 320;
 
+// Button colours chosen to read well on the CoreS3 panel (pure TFT_BLUE is nearly black).
+static const uint32_t COL_GREEN = 0x0560;   // rgb(0,172,0)
+static const uint32_t COL_BLUE  = 0x2D7F;   // rgb(40,175,255)
+static const uint32_t COL_RED   = 0xD000;   // rgb(208,0,0)
+static const uint32_t COL_GREY  = 0x632C;   // rgb(96,100,96)
+static const uint32_t COL_PURPLE= 0x9015;   // rgb(144,0,168)
+
 // ---- status bar --------------------------------------------------------------
 inline void status(const char *text, uint32_t bg = TFT_NAVY) {
   M5.Display.fillRect(0, 0, W, BAR_H, bg);
   M5.Display.setTextColor(TFT_WHITE, bg);
+  M5.Display.setFont(&fonts::Font0);
   M5.Display.setTextSize(2);
   M5.Display.setCursor(6, 6);
   M5.Display.print(text);
@@ -65,10 +73,13 @@ struct Button {
     uint32_t bg = pressed ? TFT_WHITE : color;
     M5.Display.fillRoundRect(x, y, w, h, 8, bg);
     M5.Display.setTextColor(pressed ? TFT_BLACK : TFT_WHITE, bg);
-    M5.Display.setTextSize(2);
+    M5.Display.setFont(&fonts::DejaVu12);
+    M5.Display.setTextSize(1);
     int tw = M5.Display.textWidth(label);
-    M5.Display.setCursor(x + (w - tw) / 2, y + (h - 16) / 2);
+    int th = M5.Display.fontHeight();
+    M5.Display.setCursor(x + (w - tw) / 2, y + (h - th) / 2);
     M5.Display.print(label);
+    M5.Display.setFont(&fonts::Font0);
   }
 };
 

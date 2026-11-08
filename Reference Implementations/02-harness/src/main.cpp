@@ -21,9 +21,9 @@
 
 enum { BTN_WIFI, BTN_TEST, BTN_CLEAR, N_BTN };
 static ui::Button buttons[N_BTN] = {
-  { "WiFi",  0, 0, 0, 0, TFT_DARKGREEN },
-  { "Test",  0, 0, 0, 0, TFT_BLUE },
-  { "Clear", 0, 0, 0, 0, TFT_DARKGREY },
+  { "WiFi",  0, 0, 0, 0, ui::COL_GREEN },
+  { "Test",  0, 0, 0, 0, ui::COL_BLUE },
+  { "Clear", 0, 0, 0, 0, ui::COL_GREY },
 };
 
 static bool wantWifi = false;

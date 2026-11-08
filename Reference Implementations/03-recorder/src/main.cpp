@@ -23,16 +23,16 @@
 static const uint32_t SAMPLE_RATE = 16000;
 static const size_t   CHUNK = 1024;             // samples per I2S chunk (64 ms)
 static int16_t recBuf[2][CHUNK];
-static int16_t playBuf[2][CHUNK];
+static int16_t playBuf[3][CHUNK];               // speaker queue holds 2; the third is free to fill
 static const char *REC_DIR = "/recordings";
 
 // ---- UI ------------------------------------------------------------------------
 enum { BTN_WIFI, BTN_REC, BTN_PLAY, BTN_CLEAR, N_BTN };
 static ui::Button buttons[N_BTN] = {
-  { "WiFi",  0, 0, 0, 0, TFT_DARKGREEN },
-  { "Rec",   0, 0, 0, 0, TFT_RED },
-  { "Play",  0, 0, 0, 0, TFT_BLUE },
-  { "Clear", 0, 0, 0, 0, TFT_DARKGREY },
+  { "WiFi",  0, 0, 0, 0, ui::COL_GREEN },
+  { "Rec",   0, 0, 0, 0, ui::COL_RED },
+  { "Play",  0, 0, 0, 0, ui::COL_BLUE },
+  { "Clear", 0, 0, 0, 0, ui::COL_GREY },
 };
 
 // ---- state ---------------------------------------------------------------------
@@ -157,17 +157,19 @@ static void playLast() {
   if (!f) { ui::log("Play: cannot open %s", lastFile); return; }
   f.seek(44);
   ui::log("Play: %s", lastFile);
-  ui::status("PLAYING", TFT_PURPLE);
+  ui::status("PLAYING", ui::COL_PURPLE);
   M5.Mic.end();
   M5.Speaker.begin();
-  M5.Speaker.setVolume(160);
+  M5.Speaker.setVolume(128);
   int idx = 0;
   while (f.available()) {
+    // playRaw does not copy: a buffer must not be refilled while it is playing or
+    // queued. Wait for a free queue slot first, then fill a buffer that is not in use.
+    while (M5.Speaker.isPlaying(0) >= 2) delay(1);
     size_t n = f.read((uint8_t *)playBuf[idx], CHUNK * 2) / 2;
     if (n == 0) break;
-    while (M5.Speaker.isPlaying(0) >= 2) delay(1);   // wait for a free queue slot
     M5.Speaker.playRaw(playBuf[idx], n, SAMPLE_RATE, false, 1, 0);
-    idx ^= 1;
+    idx = (idx + 1) % 3;
     M5.update();
   }
   while (M5.Speaker.isPlaying(0)) delay(1);
