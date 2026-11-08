@@ -57,7 +57,9 @@ static void *ps(size_t n) {
 static void fatal(const char *msg) {
   Serial.printf("FATAL: %s\n", msg);
   M5.Display.setTextColor(TFT_RED, TFT_BLACK);
-  M5.Display.printf("\nFATAL: %s\n", msg);
+  M5.Display.setTextSize(2);
+  M5.Display.setCursor(4, 40);
+  M5.Display.printf("FATAL: %s", msg);
   while (1) delay(1000);
 }
 static void *ps_or_die(size_t n, const char *what) {
@@ -138,8 +140,13 @@ static void alloc_scratch() {
 }
 
 // ---- display ---------------------------------------------------------------
+// Status bar drawn straight on the panel; the story lives in an off-screen
+// canvas (sprite) with text scrolling enabled, pushed to the panel after each
+// token. Drawing text directly on the panel wraps back to the top when it
+// reaches the bottom; a canvas with setTextScroll scrolls instead.
 static const int BAR_H = 24;
 static int screenW, screenH;
+static M5Canvas story(&M5.Display);
 
 static void drawStatus(const char *msg) {
   M5.Display.fillRect(0, 0, screenW, BAR_H, TFT_NAVY);
@@ -149,11 +156,21 @@ static void drawStatus(const char *msg) {
   M5.Display.print(msg);
 }
 
+static void initStoryCanvas() {
+  story.setPsram(true);
+  story.setColorDepth(8);
+  story.createSprite(screenW, screenH - BAR_H);
+  story.setTextSize(2);
+  story.setTextWrap(true, true);
+  story.setTextScroll(true);
+  story.setScrollRect(0, 0, screenW, screenH - BAR_H, TFT_BLACK);
+}
+
 static void clearStory() {
-  M5.Display.fillRect(0, BAR_H, screenW, screenH - BAR_H, TFT_BLACK);
-  M5.Display.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
-  M5.Display.setTextSize(2);
-  M5.Display.setCursor(4, BAR_H + 4);
+  story.fillScreen(TFT_BLACK);
+  story.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
+  story.setCursor(4, 4);
+  story.pushSprite(0, BAR_H);
 }
 
 static void emit(int tok) {
@@ -162,12 +179,13 @@ static void emit(int tok) {
   int len = VOCAB_OFF[tok + 1] - VOCAB_OFF[tok];
   if ((int)Serial.availableForWrite() >= len) Serial.write(bytes, len);
   // Wrap whole tokens: if this word will not fit, start a new line first.
-  int w = M5.Display.textWidth(String((const char *)bytes, len));
-  if (M5.Display.getCursorX() + w > screenW - 4) M5.Display.print('\n');
+  int w = story.textWidth(String((const char *)bytes, len));
+  if (story.getCursorX() + w > screenW - 4) story.print('\n');
   for (int i = 0; i < len; i++) {
     char c = (char)bytes[i];
-    if (c == '\n' || (c >= 32 && c < 127)) M5.Display.print(c);
+    if (c == '\n' || (c >= 32 && c < 127)) story.print(c);
   }
+  story.pushSprite(0, BAR_H);
 }
 
 // ---- sampling --------------------------------------------------------------
@@ -263,6 +281,7 @@ void setup() {
   screenH = M5.Display.height();
   M5.Display.fillScreen(TFT_BLACK);
   drawStatus("loading model...");
+  initStoryCanvas();
   clearStory();
   Serial.println("\n=== CoreS3 TinyStories LM ===");
 

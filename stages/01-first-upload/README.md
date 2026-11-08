@@ -6,8 +6,8 @@ children's stories on the screen, with no network and no server. Then make one c
 to it using Claude Code.
 
 This is a port of [slvDev/esp32-ai](https://github.com/slvDev/esp32-ai) (MIT) to the
-CoreS3. The model is trained on the TinyStories dataset and runs about 6 tokens per second
-on this board.
+CoreS3. The model is trained on the TinyStories dataset and runs about 5 to 6 tokens per
+second on this board while drawing to the screen.
 
 ## Setup
 From the repo root:
