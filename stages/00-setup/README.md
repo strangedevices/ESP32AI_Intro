@@ -98,8 +98,17 @@ Then run the environment check:
 
 Everything should say OK.
 
+## Connecting the module
+- Use a good-quality, full-featured USB-C **data** cable (not a charge-only cable) plugged
+  **directly into a port on your laptop**, not through a hub or dock. Hubs and cheap cables
+  are the most common cause of "no serial port" and failed uploads.
+- Bring a USB-C to USB-C cable and a USB-A to USB-C cable so you have whichever your
+  laptop needs.
+- When the module is not plugged into your laptop, power it from a USB-C power bank. The
+  CoreS3 SE has no battery.
+
 ## On the day
-1. Plug in the CoreS3 with a data-capable USB-C cable. Run the factory demo, check the
+1. Plug in the CoreS3 with the data cable, directly into your laptop. Run the factory demo, check the
    screen, speaker and touch work.
 2. Insert the microSD card (FAT32). The factory demo should show it. **This matters:**
    later stages record to it.
