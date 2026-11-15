@@ -47,8 +47,8 @@ Look at `src/ui.h` first: the status bar, log canvas and buttons live there and 
 stages reuse them.
 
 ## Done when
-You can connect, see the IP in the bar, get HTTP 401 from Test, disconnect, and you have
-made one change of your own.
+You can connect, see the IP in the bar, get an HTTP status from Test (404 or 401),
+disconnect, and you have made one change of your own.
 
 ## Stuck?
 - "WiFi: failed": wrong password, 5 GHz-only hotspot, or a captive portal network.
