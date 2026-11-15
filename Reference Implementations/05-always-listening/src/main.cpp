@@ -12,6 +12,7 @@
 //
 // Buttons:  [WiFi] [Talk] start / end a conversation   [Auto] toggle auto mode   [Clear]
 // Serial:   w, t, a, c as above.  r / s / d simulate the three tool calls for testing.
+//           m sends the agent a typed request that should make it call get_device_status.
 #include <M5Unified.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -366,6 +367,19 @@ static void onMessage(char *msg, size_t len) {
   }
 }
 
+// Send the agent a typed message instead of speech. Handy for testing without talking.
+static void sendTextToAgent(const char *text) {
+  if (!session) { ui::log("Start a conversation first"); return; }
+  JsonDocument m;
+  m["type"] = "user_message";
+  m["text"] = text;
+  char buf[300];
+  size_t n = serializeJson(m, buf, sizeof buf);
+  say(TFT_CYAN, "You (typed): ", text);
+  ws.sendText(buf, n);
+  listenIdleMs = 0;
+}
+
 static void simulateTool(const char *name) {
   char msg[160];
   int n = snprintf(msg, sizeof msg,
@@ -553,6 +567,7 @@ void loop() {
   if (c == 'r') simulateTool("start_recording");
   if (c == 's') simulateTool("stop_recording");
   if (c == 'd') simulateTool("get_device_status");
+  if (c == 'm') sendTextToAgent("Please check the device status and tell me the Wi-Fi signal.");
 
   if (!session) {
     if (autoMode) pumpMonitor();

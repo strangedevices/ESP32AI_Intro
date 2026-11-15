@@ -63,6 +63,9 @@ card as `conv_000.wav`, with both sides of the conversation in order.
 To test the device side without the agent (and without credits), use the serial monitor:
 `r` start recording, `s` stop, `d` device status.
 
+During a conversation, the serial key `m` sends the agent a typed request to check the
+device status. It is a quick way to see a real tool call without speaking.
+
 ## Now change it with Claude Code
 The interesting part is inventing tools. Look at `runTool()` in `src/main.cpp`: a tool is
 a name, a few lines of code, and a sentence returned to the agent. Ideas:
