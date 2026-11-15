@@ -119,7 +119,9 @@ Everything should say OK.
    appears as "USB Serial Device (COMx)" on Windows and `/dev/cu.usbmodem*` on a Mac;
    PlatformIO finds it by itself. Uploading takes about 30 seconds.
    The screen should show PSRAM 8192 KB, flash 16 MB, and SD card OK once a card is in.
-5. Have your ElevenLabs API key to hand.
+5. Have your ElevenLabs API key to hand. It goes in `Reference Implementations/secrets.h`
+   (copy `secrets.h.example`), along with your hotspot name and password. That one file
+   is used by every stage and is never committed.
 
 If the upload fails with "no serial port": hold the reset button on the CoreS3 for about
 three seconds until the internal LED turns green (download mode), then retry.

@@ -4,7 +4,10 @@ This is a PlatformIO project for the M5Stack CoreS3 / CoreS3 SE (ESP32-S3).
 - Framework: Arduino. Libraries: M5Unified (display, touch, mic, speaker, SD, RTC) and M5GFX.
 - Board config lives in platformio.ini; build with `pio run`, flash with `pio run -t upload`,
   serial with `pio device monitor -b 115200`.
-- Wi-Fi and API credentials go in include/secrets.h (gitignored). Never commit keys.
+- Credentials (Wi-Fi, ElevenLabs API key and agent id) live in ONE gitignored file shared by
+  every stage: `Reference Implementations/secrets.h`, created from `secrets.h.example`.
+  Each stage's platformio.ini has `build_flags = -I..` so `#include "secrets.h"` finds it.
+  Never commit it, never print its contents, and do not copy keys into source files.
 - Prefer M5.Mic / M5.Speaker from M5Unified over raw I2S for audio. Mic and speaker share
   one I2S bus on the CoreS3: end one before beginning the other.
 - `M5.Speaker.playRaw()` does not copy the samples. Its queue holds two chunks, so stream

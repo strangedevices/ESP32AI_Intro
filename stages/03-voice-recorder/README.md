@@ -7,8 +7,8 @@ voice assistant in stage 04 is built on.
 
 ## Setup
 1. Make sure the microSD card is in (stage 00). Recordings go in a `recordings` folder.
-2. Copy your `include/secrets.h` from stage 02 into `Reference Implementations/03-recorder/include/`
-   (Wi-Fi is optional in this stage, but stage 04 needs it).
+2. Nothing to copy: this stage reads the same `Reference Implementations/secrets.h` you
+   made in stage 02 (Wi-Fi is optional here, but stage 04 needs it).
 3. Build and flash:
 
 ```bash

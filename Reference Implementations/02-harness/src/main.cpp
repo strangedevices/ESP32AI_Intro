@@ -1,6 +1,6 @@
 // Stage 02 - the workshop harness: status bar, scrolling log, touch buttons, Wi-Fi.
 //
-// Buttons:  [WiFi]  connect / disconnect using include/secrets.h
+// Buttons:  [WiFi]  connect / disconnect using ../secrets.h
 //           [Test]  HTTPS GET to api.elevenlabs.io to prove internet + TLS work
 //           [Clear] clear the log
 //
@@ -14,7 +14,7 @@
 #if __has_include("secrets.h")
 #include "secrets.h"
 #else
-#warning "include/secrets.h not found - copy include/secrets.h.example and edit it"
+#warning "secrets.h not found - copy Reference Implementations/secrets.h.example to secrets.h"
 #define WIFI_SSID ""
 #define WIFI_PASS ""
 #endif
@@ -50,7 +50,7 @@ static void wifiToggle() {
     ui::log("WiFi: disconnected");
   } else {
     if (strlen(WIFI_SSID) == 0) {
-      ui::log("No credentials: create include/secrets.h");
+      ui::log("No credentials: create ../secrets.h");
       return;
     }
     wantWifi = true;

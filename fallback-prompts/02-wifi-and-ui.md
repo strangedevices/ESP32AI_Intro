@@ -4,8 +4,8 @@ Run `claude` inside `Reference Implementations/02-harness` and paste:
 
 ```
 This PlatformIO project is a touch UI harness for an M5Stack CoreS3 (ESP32-S3, Arduino,
-M5Unified). include/secrets.h holds my hotspot credentials (do not print them). Please:
-1. Run `pio run` and fix any build error without changing include/secrets.h.
+M5Unified). ../secrets.h holds my credentials (do not read, print or edit it). Please:
+1. Run `pio run` and fix any build error without touching ../secrets.h.
 2. Flash with `pio run -t upload` and watch `pio device monitor` for 20 seconds.
 3. Send the character `w` to the serial port to connect Wi-Fi, wait for "WiFi: connected",
    then send `t` and tell me the HTTP status the Test reports. Any HTTP status means success.

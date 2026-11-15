@@ -8,9 +8,9 @@ internet over TLS. Everything in later stages depends on this working.
 ## Setup
 1. Turn on your phone hotspot: 2.4 GHz, WPA2, a simple password. Connect your laptop
    to it too.
-2. In `Reference Implementations/02-harness`, copy `include/secrets.h.example` to
-   `include/secrets.h` and put your hotspot name and password in it. That file is
-   gitignored; never commit credentials.
+2. In `Reference Implementations`, copy `secrets.h.example` to `secrets.h` (same folder)
+   and put your hotspot name and password in it. Every stage reads this one file. It is
+   gitignored; never commit it, paste it into a chat, or show it on a shared screen.
 3. Build and flash:
 
 ```bash
