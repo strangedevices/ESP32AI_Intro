@@ -4,8 +4,7 @@
 Hold a spoken conversation with an ElevenLabs agent from the CoreS3: the device streams
 your voice to the agent over a WebSocket and plays the agent's reply through the speaker.
 
-The firmware for this stage is still being built. The account and agent setup below is
-ready, and you can do it before the workshop.
+Do the account and agent setup below first; you can do it before the workshop.
 
 ## Setup part 1: make an agent
 You need an ElevenLabs account (the free tier is enough to start) and one agent in it.
@@ -53,9 +52,54 @@ presenter: there is a shared workshop agent with its own key. You replace **both
 in `secrets.h` with the ones you are given, because a key only works with agents in the
 same account.
 
+## Build and flash
+```bash
+cd "Reference Implementations/04-assistant"
+```
+```bash
+pio run -t upload
+```
+```bash
+pio device monitor
+```
+
+## Try it
+- Tap **Talk**. The device joins Wi-Fi if needed, asks ElevenLabs for a signed URL, and
+  opens the WebSocket (about two seconds). The agent greets you.
+- When the bar says **LISTENING** (green, with a level meter), speak. The agent works out
+  by itself when you have finished. Your words and the agent's reply appear in the log.
+- While the bar says **AGENT SPEAKING** the microphone is off, so you cannot interrupt.
+- Tap **End** to finish, or just say goodbye: the agent can hang up by itself.
+- Serial shortcuts: `t` talk/end, `w` Wi-Fi, `c` clear.
+
+Each conversation uses ElevenLabs credits. End it when you are not using it.
+
+## How it works
+- `src/ws_client.h` is a small WebSocket client written for this workshop. The usual
+  Arduino WebSockets library rejects messages over 15 KB, and the agent sends audio in
+  messages of hundreds of KB, so this one buffers each message in PSRAM.
+- Audio from the agent arrives as base64 PCM inside JSON. It is decoded into a ring buffer
+  in PSRAM and fed to the speaker a chunk at a time. Your voice goes the other way: each
+  128 ms mic chunk is base64-encoded and sent as `{"user_audio_chunk": "..."}`.
+- The mic and speaker share one I2S bus, so the device is half-duplex: it switches to the
+  speaker when agent audio arrives and back to the mic 300 ms after playback finishes.
+- The server sends `ping` messages; the device must answer each with a `pong` or the
+  conversation is dropped.
+
+## Now change it with Claude Code
+- Change your agent's prompt, voice or first message in the ElevenLabs dashboard. No
+  reflash needed.
+- Show the conversation length and audio received in the status bar.
+- Add barge-in: tapping the screen while the agent speaks stops playback and listens.
+- Save each conversation's transcript to the SD card.
+- Make the screen show a "thinking" state between your words and the agent's reply.
+
 ## Done when
-For now: your agent answers you in the browser Preview, and `secrets.h` has your key and
-agent id. The device part follows.
+You have had a spoken conversation with your agent on the device and made one change.
 
 ## Stuck?
-See `fallback-prompts/04-voice-assistant.md`.
+- "Signed URL: HTTP 401": the API key is wrong or lacks agent permission.
+- "Signed URL: HTTP 404": the agent id is wrong, or the agent belongs to another account.
+- Connects but silent: check the log line "Agent audio pcm_16000"; other formats need the
+  agent's output format changed in the dashboard.
+- See `fallback-prompts/04-voice-assistant.md`.
