@@ -78,7 +78,8 @@ our tests. A free account has 10,000 a month, so you have about ten minutes of t
 Spend them on short, deliberate conversations.
 
 The firmware protects you: the status bar shows the seconds used, a conversation ends by
-itself after 20 seconds of silence, and no conversation runs longer than 90 seconds. The
+itself after 20 seconds of listening with nobody speaking, and no conversation runs longer
+than 90 seconds. The
 limits are `IDLE_END_S` and `MAX_SESSION_S` at the top of `src/main.cpp`. Check what you
 have left under your profile in the ElevenLabs dashboard.
 

@@ -66,6 +66,7 @@ static bool session = false;
 static bool wantWifi = false;
 static uint32_t lastAudioMs = 0, transcriptMs = 0, sessionStart = 0, lastActivityMs = 0;
 static uint32_t audioBytesIn = 0, chunksOut = 0;
+static uint32_t listenIdleMs = 0, lastTick = 0;   // time spent listening since you last spoke
 
 enum { BTN_WIFI, BTN_TALK, BTN_CLEAR, N_BTN };
 static ui::Button buttons[N_BTN] = {
@@ -217,8 +218,10 @@ static void onMessage(char *msg, size_t len) {
     r = rateFromFormat(in);
     if (r) micRate = r; else ui::log("!! unsupported mic format");
   } else if (!strcmp(type, "user_transcript")) {
-    say(TFT_CYAN, "You: ", doc["user_transcription_event"]["user_transcript"] | "");
-    transcriptMs = lastActivityMs = millis();
+    const char *said = doc["user_transcription_event"]["user_transcript"] | "";
+    say(TFT_CYAN, "You: ", said);
+    transcriptMs = millis();
+    if (strcmp(said, "...") != 0) listenIdleMs = 0;   // "..." means it heard only noise
   } else if (!strcmp(type, "agent_response")) {
     say(TFT_YELLOW, "Agent: ", doc["agent_response_event"]["agent_response"] | "");
   } else if (!strcmp(type, "interruption")) {
@@ -306,7 +309,8 @@ static void startSession() {
   ui::log("Connected in %lu ms. Say hello!", millis() - t0);
 
   session = true;
-  sessionStart = lastActivityMs = millis();
+  sessionStart = lastActivityMs = lastTick = millis();
+  listenIdleMs = 0;
   audioBytesIn = 0; chunksOut = 0; ringCount = 0; ringHead = 0; transcriptMs = 0;
   buttons[BTN_TALK].label = "End";
   buttons[BTN_TALK].draw();
@@ -365,7 +369,12 @@ void loop() {
 
   // Credit guards.
   if (millis() - sessionStart > MAX_SESSION_S * 1000) { endSession("time limit, tap Talk to go again"); return; }
-  if (mode == LISTENING && millis() - lastActivityMs > IDLE_END_S * 1000) { endSession("nobody spoke"); return; }
+  // Count only time spent listening. The agent asking "are you still there?" does not
+  // reset it; only your words (or a tool call) do.
+  uint32_t now = millis();
+  if (mode == LISTENING) listenIdleMs += now - lastTick;
+  lastTick = now;
+  if (listenIdleMs > IDLE_END_S * 1000) { endSession("nobody spoke"); return; }
 
   // Turn-taking. Wait for a little audio to build up before playing (or for the whole of
   // a short reply), so playback does not stutter if the next message is slow to arrive.

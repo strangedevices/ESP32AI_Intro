@@ -17,6 +17,13 @@ This is a PlatformIO project for the M5Stack CoreS3 / CoreS3 SE (ESP32-S3).
   rejects messages over 15 KB and agent audio messages are hundreds of KB. Use
   `04-assistant/src/ws_client.h`. Answer every `ping` with a `pong`. Audio is base64 PCM at
   the rate named in the `conversation_initiation_metadata` event (16 kHz by default).
+- Credits: an open ElevenLabs conversation costs about 1000 credits a minute. Never start one
+  to test unless the user asks. Keep the guards (MAX_SESSION_S, IDLE_END_S). The serial key
+  `t` toggles a conversation: read the log to know the state before sending it. Stage 05 has
+  serial keys r / s / d that exercise the tools without a conversation.
+- Agent client tools (stage 05): the agent sends `client_tool_call`; reply with
+  `client_tool_result` carrying the same tool_call_id, a text result and is_error. Each tool
+  must also be defined on the agent in the ElevenLabs dashboard with the same name.
 - Colours: pure TFT_BLUE / TFT_DARKGREEN are nearly black on this panel. Use the `ui::COL_*`
   constants in ui.h. Button labels use the 12 px DejaVu font; status bar uses Font0 size 2.
 - Screen orientation: `M5.Display.setRotation(1)` gives portrait with the USB-C port at the
