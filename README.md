@@ -31,4 +31,5 @@ and `Reference Implementations/` hold a working build of every stage.
 - `fallback-prompts/` - prompts to get the reference implementation running if you are stuck.
 - `Reference Implementations/` - complete PlatformIO projects for each stage.
 - `tools/` - environment-check scripts.
+- `presentation/` - the slides used in the workshop. Open `presentation/index.html` in a browser.
 - `secrets.h.example` - copy to `secrets.h` (never committed) for Wi-Fi and ElevenLabs details.

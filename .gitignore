@@ -11,3 +11,5 @@ New folder/
 *.log
 .DS_Store
 Thumbs.db
+# Private presenter notes are kept in the trainer repo; a local copy may sit here.
+presentation/presenter-notes.js

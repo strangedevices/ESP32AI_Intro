@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-Powered ESP32 Development with PlatformIO</title>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1d2530; --ink:#e8eef4; --muted:#9aa7b4;
+  --accent:#b7f34a; --accent-ink:#10180a; --blue:#58b4ff; --warn:#ffb454; --danger:#ff7b72;
+  --line:#2b3440; --code:#0a0e13;
+  --head:Bahnschrift,"DIN Alternate","Avenir Next Condensed","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"Cascadia Code","Cascadia Mono","SF Mono",Consolas,Menlo,monospace;
+}
+:root[data-theme="light"]{
+  --bg:#f6f7f3; --panel:#ffffff; --panel2:#eef1ea; --ink:#12171c; --muted:#56616c;
+  --accent:#3f7d00; --accent-ink:#ffffff; --blue:#0b63c5; --warn:#a85d00; --danger:#c0392b;
+  --line:#d3d9df; --code:#12171c;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);overflow:hidden}
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:1600px;height:900px;position:relative;flex:none;transform-origin:center center}
+
+/* ---------- slide ---------- */
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:64px 88px 84px;font-size:30px;line-height:1.38;background:var(--bg);color:var(--ink)}
+.slide.active{display:flex}
+.kicker{font-family:var(--mono);font-size:21px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;display:flex;gap:14px;align-items:center}
+.kicker .chip{background:var(--accent);color:var(--accent-ink);padding:2px 12px;border-radius:6px;font-weight:700;letter-spacing:.04em}
+h1{font-family:var(--head);font-size:104px;line-height:1.02;margin:0 0 26px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+h2{font-family:var(--head);font-size:66px;line-height:1.06;margin:0 0 30px;font-weight:700;text-wrap:balance}
+h3{font-family:var(--head);font-size:32px;margin:0 0 10px;font-weight:700;color:var(--accent)}
+p{margin:0 0 18px}
+.lead{font-size:38px;color:var(--muted);max-width:1250px}
+ul,ol{margin:0;padding-left:1.15em}
+li{margin:0 0 12px}
+li::marker{color:var(--accent)}
+strong{color:var(--ink);font-weight:700}
+em{font-style:normal;color:var(--accent)}
+.muted{color:var(--muted)}
+.small{font-size:24px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:44px;flex:1;min-height:0}
+.cols.wide-left{grid-template-columns:1.35fr 1fr}
+.cols.wide-right{grid-template-columns:1fr 1.35fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px 28px}
+.card.accent{border-left:6px solid var(--accent)}
+.card.warn{border-left:6px solid var(--warn)}
+.card.danger{border-left:6px solid var(--danger)}
+.card h3{font-size:28px}
+.card p:last-child,.card ul:last-child{margin-bottom:0}
+.grow{flex:1;min-height:0}
+.center{align-items:flex-start;justify-content:center}
+.spacer{flex:1}
+
+code{font-family:var(--mono);font-size:.88em;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 8px;white-space:nowrap}
+pre.cmd{position:relative;margin:0 0 14px;background:var(--code);color:#dfe8f0;border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:10px;padding:16px 120px 16px 22px;font-family:var(--mono);font-size:26px;line-height:1.35;white-space:pre-wrap;word-break:break-word}
+pre.cmd .copy{position:absolute;right:10px;top:10px;font:600 17px var(--body);background:transparent;color:#9fb0c0;border:1px solid #3a4756;border-radius:6px;padding:5px 12px;cursor:pointer}
+pre.cmd .copy:hover{color:#fff;border-color:#8ea0b2}
+pre.cmd .copy.ok{color:var(--accent);border-color:var(--accent)}
+pre.cmd .os{color:#7f8fa0}
+blockquote.prompt{margin:0;background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:10px;padding:18px 24px;font-size:25px;line-height:1.4;color:var(--ink)}
+blockquote.prompt::before{content:"prompt";display:block;font:700 16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+
+.done{list-style:none;padding:0;margin:0}
+.done li{padding-left:44px;position:relative;margin-bottom:12px}
+.done li::before{content:"";position:absolute;left:0;top:7px;width:26px;height:26px;border:3px solid var(--accent);border-radius:6px}
+.done li::after{content:"";position:absolute;left:8px;top:9px;width:9px;height:16px;border:solid var(--accent);border-width:0 4px 4px 0;transform:rotate(42deg)}
+
+table{border-collapse:collapse;width:100%;font-size:26px}
+th{text-align:left;font:700 18px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 14px;border-bottom:2px solid var(--line)}
+td{padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-family:var(--mono);white-space:nowrap;color:var(--accent)}
+tr.now td{background:var(--panel2)}
+tr.now td:first-child{box-shadow:inset 5px 0 0 var(--accent)}
+
+.big{font-family:var(--head);font-size:150px;line-height:1;font-weight:700;color:var(--accent)}
+.big small{display:block;font-size:44px;color:var(--muted);font-weight:400;margin-top:8px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--head);font-size:52px;line-height:1.05;color:var(--accent);white-space:nowrap}
+.stat span{font-size:22px;color:var(--muted)}
+
+/* journey */
+.path{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:8px}
+.path .step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px 18px;position:relative}
+.path .step .n{font:700 18px var(--mono);color:var(--accent);letter-spacing:.08em}
+.path .step b{display:block;font-family:var(--head);font-size:27px;line-height:1.1;margin:6px 0 8px}
+.path .step span{font-size:20px;color:var(--muted);line-height:1.3;display:block}
+.path .step.stretch{border-style:dashed}
+
+/* flow diagram */
+.flow{display:flex;align-items:stretch;gap:0;margin:6px 0 4px}
+.flow .node{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px 18px;text-align:center;font-size:25px;line-height:1.28}
+.flow .node b{display:block;font-family:var(--head);font-size:32px;color:var(--accent);margin-bottom:6px}
+.flow .arrow{flex:none;width:64px;display:flex;flex-direction:column;justify-content:center;align-items:center;font:700 15px var(--mono);color:var(--muted);gap:2px}
+.flow .arrow i{font-style:normal;font-size:30px;color:var(--blue);line-height:1}
+
+figure{margin:0;height:100%;display:flex;flex-direction:column;gap:10px;min-height:0}
+figure img{flex:1;min-height:0;width:100%;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
+figure img.contain{object-fit:contain;background:var(--panel)}
+figcaption{font-size:20px;color:var(--muted)}
+
+.title-slide{justify-content:center}
+.title-slide .meta{font-family:var(--mono);font-size:24px;color:var(--muted);margin-top:30px;display:flex;gap:28px;flex-wrap:wrap}
+.title-slide .meta b{color:var(--ink);font-weight:600}
+.rule{height:8px;width:220px;background:var(--accent);border-radius:4px;margin:0 0 34px}
+.section-slide{justify-content:center}
+.section-slide .num{font-family:var(--head);font-size:230px;line-height:.85;color:var(--accent);font-weight:700}
+.wrinkle{display:grid;grid-template-columns:1fr 1fr;gap:16px 26px}
+.wrinkle .w{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px 26px;font-size:27px;line-height:1.36}
+.wrinkle .w b{display:block;color:var(--warn);font-family:var(--head);font-size:32px;margin-bottom:6px}
+.wrinkle .w span{color:var(--muted)}
+.wrinkle .w span em{color:var(--accent)}
+
+/* ---------- chrome ---------- */
+#foot{position:absolute;left:88px;right:88px;bottom:26px;display:flex;justify-content:space-between;align-items:center;font:500 18px var(--mono);color:var(--muted);letter-spacing:.04em;pointer-events:none}
+#foot .clock{color:var(--ink)}
+#foot .clock.behind{color:var(--warn)}
+#bar{position:absolute;left:0;bottom:0;height:5px;background:var(--accent);transition:width .25s}
+#notesDrawer{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;background:var(--panel);border-top:3px solid var(--accent);padding:16px 26px;font-size:18px;line-height:1.45;display:none;z-index:20}
+#notesDrawer.open{display:block}
+#notesDrawer h4,#pvNotes h4{margin:0 0 6px;font:700 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.notes-body ul{padding-left:1.1em;margin:0 0 8px}
+.notes-body li{margin-bottom:5px}
+.notes-body p{margin:0 0 8px}
+.notes-body b{color:var(--warn)}
+#help{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:40}
+#help.open{display:flex}
+#help .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 34px;font-size:18px;min-width:520px}
+#help h3{font-size:24px;margin-bottom:12px}
+#help kbd,#pvBar kbd{font-family:var(--mono);background:var(--panel2);border:1px solid var(--line);border-bottom-width:3px;border-radius:5px;padding:1px 7px;font-size:.9em}
+#help table{font-size:17px}
+#help td{padding:5px 10px;border:0}
+
+/* overview */
+#overview{position:fixed;inset:0;background:var(--bg);overflow:auto;padding:24px;display:none;z-index:30}
+#overview.open{display:block}
+#ovGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.ovItem{cursor:pointer;border:2px solid var(--line);border-radius:8px;overflow:hidden;position:relative;aspect-ratio:16/9;background:var(--bg)}
+.ovItem.cur{border-color:var(--accent)}
+.ovItem .tag{position:absolute;left:6px;top:6px;z-index:2;font:700 12px var(--mono);background:var(--accent);color:var(--accent-ink);padding:1px 7px;border-radius:4px}
+.thumb{width:1600px;height:900px;position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none}
+.thumb .slide{display:flex}
+
+/* presenter view */
+body.presenter #viewport{display:none}
+#pv{display:none}
+body.presenter #pv{display:grid;position:fixed;inset:0;grid-template-columns:1.55fr 1fr;grid-template-rows:auto 1fr;gap:14px;padding:14px;background:#06080b;color:#e8eef4}
+#pvBar{grid-column:1/3;display:flex;align-items:center;gap:22px;font:500 15px var(--body);color:#9aa7b4;flex-wrap:wrap}
+#pvBar .t{font:700 34px var(--mono);color:#fff}
+#pvBar .plan{font:600 17px var(--mono);padding:4px 12px;border-radius:6px;background:#161b22;color:#b7f34a}
+#pvBar .plan.behind{color:#10180a;background:#ffb454}
+#pvBar button{font:600 14px var(--body);background:#161b22;color:#e8eef4;border:1px solid #2b3440;border-radius:6px;padding:6px 12px;cursor:pointer}
+#pvBar button:hover{border-color:#b7f34a}
+#pvLeft{display:flex;flex-direction:column;gap:10px;min-height:0}
+#pvRight{display:flex;flex-direction:column;gap:10px;min-height:0}
+.pvFrame{position:relative;aspect-ratio:16/9;border:1px solid #2b3440;border-radius:8px;overflow:hidden;background:var(--bg);flex:none}
+.pvLabel{font:700 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#9aa7b4}
+#pvNotes{flex:1;min-height:0;overflow:auto;background:#11161d;border:1px solid #2b3440;border-radius:8px;padding:14px 18px;font-size:19px;line-height:1.45}
+#pvSecs{font:500 13px var(--mono);color:#9aa7b4;display:flex;gap:6px;flex-wrap:wrap}
+#pvSecs span{padding:2px 8px;border-radius:5px;background:#161b22}
+#pvSecs span.cur{background:#b7f34a;color:#10180a;font-weight:700}
+@media print{
+  html,body{overflow:visible;height:auto}
+  #viewport{position:static;display:block}
+  #deck{transform:none!important;width:auto;height:auto}
+  .slide{display:flex!important;position:relative;width:1600px;height:900px;page-break-after:always}
+  #foot,#bar{display:none}
+}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="deck">
+
+<!-- ======================= WELCOME ======================= -->
+<section class="slide title-slide" data-sec="welcome" data-note="welcome-1">
+  <div class="kicker">Web Directions &middot; AI Engineer Sydney &middot; Hands-on workshop</div>
+  <div class="rule"></div>
+  <h1>AI-Powered ESP32 Development with PlatformIO</h1>
+  <p class="lead">From a first upload to a voice assistant in your hand, built by talking to an AI coding harness.</p>
+  <div class="meta"><span><b>Jeremy Kelaher</b></span><span>9 December 2026</span><span>M5Stack CoreS3 &middot; Claude Code &middot; ElevenLabs</span></div>
+</section>
+
+<section class="slide" data-sec="welcome" data-note="welcome-2">
+  <div class="kicker">Where we are going</div>
+  <h2>Six stages, one device</h2>
+  <div class="path">
+    <div class="step"><div class="n">00</div><b>Setup</b><span>Tools, cable, SD card, hotspot. A hello on the screen.</span></div>
+    <div class="step"><div class="n">01</div><b>First upload</b><span>A language model writing stories on the chip itself.</span></div>
+    <div class="step"><div class="n">02</div><b>Wi-Fi &amp; touch UI</b><span>Your own harness: status bar, log, buttons.</span></div>
+    <div class="step"><div class="n">03</div><b>Voice recorder</b><span>Microphones to SD card, and back out the speaker.</span></div>
+    <div class="step"><div class="n">04</div><b>Voice assistant</b><span>A spoken conversation with an ElevenLabs agent.</span></div>
+    <div class="step stretch"><div class="n">05 &middot; stretch</div><b>Listening &amp; tools</b><span>Wakes when you speak. The agent runs code on your device.</span></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="cols3">
+    <div class="card accent"><h3>You bring</h3><p class="small">Curiosity and a laptop. No Arduino, PlatformIO or ESP32 experience needed.</p></div>
+    <div class="card accent"><h3>You leave with</h3><p class="small">A working project and a feel for building hardware with an AI harness.</p></div>
+    <div class="card accent"><h3>Pace</h3><p class="small">Stages 00 to 04 are the core. Stage 05 is there if you fly.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="welcome" data-note="welcome-3">
+  <div class="kicker">How today works</div>
+  <h2>Try it yourself first. Bugs are the point.</h2>
+  <div class="cols">
+    <div>
+      <ol>
+        <li><strong>Read the stage</strong> in <code>stages/</code>: the goal and what "done" looks like.</li>
+        <li><strong>Build it yourself</strong> in <code>my-work/</code> by telling Claude Code what you want. Use <code>starter-prompts/</code> or your own words.</li>
+        <li><strong>Watch it build, flash and test.</strong> Look at the device. Say what you see.</li>
+        <li><strong>Stuck or short of time?</strong> <code>fallback-prompts/</code> and <code>Reference Implementations/</code> get you a working stage.</li>
+      </ol>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>What you are here to learn</h3><p class="small">Not C++. How to steer an AI harness on real hardware: what it does well, where it trips, and how you notice.</p></div>
+      <div class="card warn"><h3>Expect wrinkles</h3><p class="small">Garbled screens, crackly audio, a port that will not open. Each one is a lesson. I will show the trick after you have met the problem.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="welcome" data-note="welcome-4">
+  <div class="kicker">The plan</div>
+  <h2>Three and a half hours</h2>
+  <table id="schedule"><thead><tr><th>Start</th><th>Section</th><th>Minutes</th><th>What happens</th></tr></thead><tbody></tbody></table>
+  <p class="small muted" style="margin-top:16px" id="schedNote">Times are offsets from when we start.</p>
+</section>
+
+<section class="slide" data-sec="welcome" data-note="welcome-5">
+  <div class="kicker">The hardware</div>
+  <h2>M5Stack CoreS3</h2>
+  <div class="cols wide-left">
+    <div>
+      <div class="cols3" style="gap:22px 26px;margin-bottom:26px">
+        <div class="stat"><b>ESP32-S3</b><span>dual-core 240 MHz, Wi-Fi, Bluetooth</span></div>
+        <div class="stat"><b>16 MB</b><span>flash storage</span></div>
+        <div class="stat"><b>8 MB</b><span>PSRAM, on top of 512 KB SRAM</span></div>
+        <div class="stat"><b>2.0"</b><span>320 &times; 240 touch screen</span></div>
+        <div class="stat"><b>2 mics</b><span>plus a 1 W speaker</span></div>
+        <div class="stat"><b>microSD</b><span>and USB-C for power, flashing, serial</span></div>
+      </div>
+      <ul class="small">
+        <li>We hold it <strong>portrait, USB at the bottom</strong>. Microphones are on the right edge.</li>
+        <li>The <strong>SE</strong> model drops the camera, some sensors and the battery. Everything today works on both.</li>
+        <li>Part of a stackable family: add modules for GPS, LoRa, motors, relays, more sensors.</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="assets/stage01-story-app-cores3.jpg" alt="An M5Stack CoreS3 on a power bank, its screen showing a generated story and a tokens-per-second counter">
+      <figcaption>Stage 01 running from a power bank: a language model generating a story on the chip.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="slide" data-sec="welcome" data-note="welcome-6">
+  <div class="kicker">The toolchain</div>
+  <h2>One loop, repeated all afternoon</h2>
+  <div class="flow">
+    <div class="node"><b>You</b>say what you want and how to test it</div>
+    <div class="arrow"><i>&rarr;</i>prompt</div>
+    <div class="node"><b>Claude Code</b>writes the code, runs the tools</div>
+    <div class="arrow"><i>&rarr;</i>pio run</div>
+    <div class="node"><b>PlatformIO</b>builds and flashes over USB</div>
+    <div class="arrow"><i>&rarr;</i>serial</div>
+    <div class="node"><b>CoreS3</b>runs it, logs back, shows you</div>
+  </div>
+  <div class="cols" style="margin-top:30px">
+    <div class="card"><h3>The harness can see</h3><ul class="small"><li>Compiler errors and warnings</li><li>The serial log from the device</li><li>The files in the repo, including <code>CLAUDE.md</code></li></ul></div>
+    <div class="card warn"><h3>Only you can see</h3><ul class="small"><li>What is actually on the screen</li><li>What the speaker sounds like</li><li>Whether a tap did anything</li></ul></div>
+  </div>
+  <p class="small muted" style="margin-top:18px">So: ask for serial shortcuts and log lines for everything. It lets the harness test its own work.</p>
+</section>
+
+<!-- ======================= STAGE 00 ======================= -->
+<section class="slide section-slide" data-sec="s00" data-note="s00-1">
+  <div class="kicker"><span class="chip">Stage 00</span> Setup</div>
+  <div class="num">00</div>
+  <h2>Get every laptop talking to its device</h2>
+  <p class="lead">Nothing clever yet. Three checks that everything else depends on.</p>
+</section>
+
+<section class="slide" data-sec="s00" data-note="s00-2">
+  <div class="kicker"><span class="chip">Stage 00</span> Kit check</div>
+  <h2>Before we type anything</h2>
+  <div class="cols">
+    <ul class="done">
+      <li><strong>Data cable, straight into the laptop.</strong> Not a hub, not a dock, not a charge-only cable.</li>
+      <li><strong>microSD card in the slot.</strong> FAT32. Later stages record to it.</li>
+      <li><strong>Phone hotspot on.</strong> 2.4 GHz, WPA2, a simple password. Laptop joined to it too.</li>
+      <li><strong>Power bank handy</strong> for when the device is off the laptop. The SE has no battery.</li>
+    </ul>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>First boot</h3><p class="small">Plug in. The factory demo runs. Check the screen, touch and speaker work, and that it sees the SD card.</p></div>
+      <div class="card danger"><h3>Hotel Wi-Fi will not work for the device</h3><p class="small">It has a login page and the device cannot click it. Your laptop can use it; the CoreS3 needs your hotspot.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s00" data-note="s00-3">
+  <div class="kicker"><span class="chip">Stage 00</span> Check the tools</div>
+  <h2>Environment check, then get the repo</h2>
+  <h3>1. Clone</h3>
+  <pre class="cmd">git clone https://github.com/strangedevices/ESP32AI_Intro.git</pre>
+  <div class="cols" style="margin-top:8px">
+    <div>
+      <pre class="cmd">cd ESP32AI_Intro</pre>
+      <h3 style="margin-top:20px">2. Check</h3>
+      <pre class="cmd"><span class="os"># Windows (PowerShell)</span>
+tools\envcheck.ps1</pre>
+      <pre class="cmd"><span class="os"># macOS</span>
+bash tools/envcheck.sh</pre>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>You want to see</h3><p class="small">OK for Git, VS Code, Claude Code, PlatformIO and the ESP32 toolchain, then "All required tools present".</p></div>
+      <div class="card warn"><h3>Something MISSING?</h3><p class="small">Hand up now. The toolchain is a 1.3 GB download, so we have it on USB sticks rather than the hotspot.</p></div>
+      <p class="small muted">Keep the repo out of OneDrive, iCloud or Dropbox folders: they make builds slow and flaky. Use <code>C:\dev</code> or <code>~/dev</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s00" data-note="s00-4">
+  <div class="kicker"><span class="chip">Stage 00</span> Hello</div>
+  <h2>First flash</h2>
+  <div class="cols wide-left">
+    <div>
+      <pre class="cmd">cd "Reference Implementations/00-hello"</pre>
+      <pre class="cmd">pio run -t upload</pre>
+      <pre class="cmd">pio device monitor</pre>
+      <p class="small muted">Leave the monitor with <code>Ctrl+C</code> before you flash again. An open monitor holds the port.</p>
+    </div>
+    <div class="card accent">
+      <h3>Done when</h3>
+      <ul class="done small">
+        <li>The screen says <strong>Stage 00: hello</strong></li>
+        <li><strong>PSRAM 8192 KB</strong>, <strong>Flash 16 MB</strong></li>
+        <li><strong>SD card: OK</strong></li>
+        <li>Uptime counts in the terminal</li>
+        <li>Touching the screen shows Touch OK</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s00" data-note="s00-5">
+  <div class="kicker"><span class="chip">Stage 00</span> One file for your secrets</div>
+  <h2>secrets.h never leaves your laptop</h2>
+  <div class="cols">
+    <div>
+      <p>In the top folder of the repo, copy <code>secrets.h.example</code> to <code>secrets.h</code> and fill it in.</p>
+      <pre class="cmd">#define WIFI_SSID "your-hotspot"
+#define WIFI_PASS "your-password"
+#define ELEVENLABS_API_KEY  "sk_..."
+#define ELEVENLABS_AGENT_ID "agent_..."</pre>
+      <p class="small muted">Wi-Fi now. The two ElevenLabs lines can wait until stage 04.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>Every project reads this one file</h3><p class="small">The references and your own work in <code>my-work/</code> all find it. Edit once.</p></div>
+      <div class="card danger"><h3>Three rules</h3><ul class="small"><li>Git ignores it. Do not force it in.</li><li>Do not paste it into a chat.</li><li>Do not open it while your screen is shared.</li></ul></div>
+      <div class="card"><h3>Tell the harness too</h3><p class="small">"Never read or print secrets.h" belongs in your prompts. The repo's CLAUDE.md already says it.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= STAGE 01 ======================= -->
+<section class="slide section-slide" data-sec="s01" data-note="s01-1">
+  <div class="kicker"><span class="chip">Stage 01</span> First upload</div>
+  <div class="num">01</div>
+  <h2>A language model on a microcontroller</h2>
+  <p class="lead">No network. No server. 28.9 million parameters on a chip the size of a postage stamp.</p>
+</section>
+
+<section class="slide" data-sec="s01" data-note="s01-2">
+  <div class="kicker"><span class="chip">Stage 01</span> What is going on inside</div>
+  <h2>Where do you put a model on a chip?</h2>
+  <div class="cols wide-left">
+    <div>
+      <table>
+        <thead><tr><th>Memory</th><th>Size</th><th>What lives there</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Flash</strong></td><td class="num">16 MB</td><td>The 15 MB model, in its own partition, read in place. One row of a huge table per token.</td></tr>
+          <tr><td><strong>PSRAM</strong></td><td class="num">8 MB</td><td>The small transformer core, unpacked at boot. The attention cache.</td></tr>
+          <tr><td><strong>SRAM</strong></td><td class="num">512 KB</td><td>The hot working set, touched many times per token.</td></tr>
+        </tbody>
+      </table>
+      <p class="small muted" style="margin-top:18px">Placement follows how often each byte is read. Fast memory is scarce, so only the busiest data gets it.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="stat"><b>28.9 M</b><span>parameters, 4 bits each</span></div>
+      <div class="stat"><b>~5.5</b><span>tokens per second, both cores working</span></div>
+      <div class="stat"><b>0</b><span>bytes sent to any server</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s01" data-note="s01-3">
+  <div class="kicker"><span class="chip">Stage 01</span> Flash it</div>
+  <h2>Two uploads: the model, then the app</h2>
+  <div class="cols wide-left">
+    <div>
+      <pre class="cmd">cd "Reference Implementations/01-story-app"</pre>
+      <pre class="cmd"><span class="os"># once: 15 MB, about two minutes</span>
+pio run -t upload_model</pre>
+      <pre class="cmd">pio run -t upload</pre>
+      <p class="small muted">A story streams onto the screen. <strong>Tap the screen</strong> for a new one. The bar at the top shows tokens per second.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>Done when</h3><ul class="done small"><li>A story is scrolling</li><li>Tapping starts a new one</li></ul></div>
+      <div class="card warn"><h3>"model partition not found"?</h3><p class="small">The model upload did not run or did not finish. Run <code>upload_model</code> again.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s01" data-note="s01-4">
+  <div class="kicker"><span class="chip">Stage 01</span> Your first change</div>
+  <h2>Now make it yours, with Claude Code</h2>
+  <div class="cols">
+    <div>
+      <p>In the <code>01-story-app</code> folder:</p>
+      <pre class="cmd">claude</pre>
+      <p>Then ask for one small thing. For example:</p>
+      <blockquote class="prompt">In src/main.cpp, make the status bar show how many tokens have been generated so far, next to the tokens-per-second figure. Keep the change small, rebuild and flash it.</blockquote>
+    </div>
+    <div>
+      <h3>Other ideas</h3>
+      <ul class="small">
+        <li>Change the colours or the text size</li>
+        <li>Set the temperature to 0. What happens to the stories?</li>
+        <li>Add a starting prompt of your own</li>
+        <li>Ask it to explain how one token gets generated</li>
+      </ul>
+      <div class="card accent" style="margin-top:22px"><h3>Watch what it does</h3><p class="small">It reads the code, edits, builds, flashes, then reads the serial log to check itself. That is the loop.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s01" data-note="s01-5">
+  <div class="kicker">Working with the harness</div>
+  <h2>Five habits that pay off today</h2>
+  <div class="cols">
+    <ol>
+      <li><strong>Describe the outcome</strong>, not the code. "A button that starts recording", not "call the mic API".</li>
+      <li><strong>Say how to test it.</strong> "Add a serial key for each button and check it over serial."</li>
+      <li><strong>Report what you see.</strong> "The text overwrites itself at the bottom" beats "it's broken".</li>
+    </ol>
+    <ol start="4">
+      <li><strong>Keep changes small.</strong> One feature, flash, look. Then the next.</li>
+      <li><strong>Write down what you learn.</strong> When you find a hardware quirk, have it added to <code>CLAUDE.md</code> so it is never rediscovered.</li>
+    </ol>
+  </div>
+  <div class="card accent" style="margin-top:24px"><p class="small"><strong>And one for your wallet:</strong> the harness is fast and confident. It is not always right. Flash it and look before you believe it.</p></div>
+</section>
+
+<!-- ======================= BREAK ======================= -->
+<section class="slide section-slide" data-sec="break" data-note="break-1">
+  <div class="kicker">Break</div>
+  <h2 style="font-size:150px;margin-bottom:10px">15 minutes</h2>
+  <p class="lead">Back at <strong id="breakBack" style="color:var(--accent)">the time on the clock</strong>. Ahead of the room? Carry on into stage 02.</p>
+</section>
+
+<!-- ======================= STAGE 02 ======================= -->
+<section class="slide section-slide" data-sec="s02" data-note="s02-1">
+  <div class="kicker"><span class="chip">Stage 02</span> Wi-Fi and touch UI</div>
+  <div class="num">02</div>
+  <h2>Build your own harness</h2>
+  <p class="lead">A status bar, a scrolling log and buttons. You will keep adding to it for the rest of the day.</p>
+</section>
+
+<section class="slide" data-sec="s02" data-note="s02-2">
+  <div class="kicker"><span class="chip">Stage 02</span> What to build</div>
+  <h2>Describe it. Let the harness build it.</h2>
+  <div class="cols wide-left">
+    <div>
+      <p>From the <strong>top folder of the repo</strong>:</p>
+      <pre class="cmd">claude</pre>
+      <p>Paste the prompt from <code>starter-prompts/02-wifi-and-ui.md</code>, or write your own. It asks for:</p>
+      <ul class="small">
+        <li>A status bar, a scrolling log, a row of touch buttons</li>
+        <li><strong>WiFi</strong>: connect and disconnect, show the IP</li>
+        <li><strong>Test</strong>: an HTTPS request, logged with its status and time</li>
+        <li><strong>Clear</strong>, and a serial key for every button</li>
+      </ul>
+      <p class="small muted">Your project lands in <code>my-work/02-harness</code>.</p>
+    </div>
+    <div class="card accent">
+      <h3>Done when</h3>
+      <ul class="done small">
+        <li>WiFi connects and the IP shows in the bar</li>
+        <li>Test logs an HTTP status (404 or 401 is a pass)</li>
+        <li>Disconnect works</li>
+        <li>The log scrolls instead of overwriting itself</li>
+        <li>You made one change of your own</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s02" data-note="s02-3">
+  <div class="kicker"><span class="chip">Stage 02</span> Wrinkles you may have just met</div>
+  <h2>Three things the compiler never told you</h2>
+  <div class="wrinkle">
+    <div class="w"><b>The log writes over itself</b><span>Printing straight to the display wraps back to the top. <em>Draw text into an off-screen canvas with scrolling on, then push it to the screen.</em></span></div>
+    <div class="w"><b>A button you cannot see</b><span>Pure blue is nearly black on this panel, though a camera sees it fine. <em>Pick colours for the hardware, and look at the device.</em></span></div>
+    <div class="w"><b>"Program too big"</b><span>Wi-Fi plus TLS is about 1.5 MB. It does not fit beside the story model. <em>Stages 02 onward use the standard partition layout.</em></span></div>
+    <div class="w"><b>"Port is busy"</b><span>A serial monitor left open holds the port, so the upload fails. <em>Close the monitor, or let the harness manage the port.</em></span></div>
+  </div>
+  <p class="small muted" style="margin-top:20px">None of these is a code error. The build was green every time. You only find them by flashing and looking.</p>
+</section>
+
+<!-- ======================= STAGE 03 ======================= -->
+<section class="slide section-slide" data-sec="s03" data-note="s03-1">
+  <div class="kicker"><span class="chip">Stage 03</span> Voice recorder</div>
+  <div class="num">03</div>
+  <h2>Sound in, sound out</h2>
+  <p class="lead">Record from the microphones to the SD card and play it back. The plumbing the assistant needs.</p>
+</section>
+
+<section class="slide" data-sec="s03" data-note="s03-2">
+  <div class="kicker"><span class="chip">Stage 03</span> What to build</div>
+  <h2>Add Rec and Play to your harness</h2>
+  <div class="cols wide-left">
+    <div>
+      <p>Same <code>claude</code> session, or a fresh one from the top folder. Use <code>starter-prompts/03-voice-recorder.md</code> or your own words:</p>
+      <ul class="small">
+        <li>Start from a copy of your stage 02 project</li>
+        <li><strong>Rec / Stop</strong>: 16 kHz mono WAV into a <code>recordings</code> folder on the SD card</li>
+        <li>A timer and a live <strong>level meter</strong> while recording</li>
+        <li><strong>Play</strong>: the latest recording through the speaker</li>
+        <li>Serial keys <code>r</code>, <code>p</code>, <code>l</code> to record, play and list</li>
+      </ul>
+    </div>
+    <div class="card accent">
+      <h3>Done when</h3>
+      <ul class="done small">
+        <li>A recording is on the card</li>
+        <li>It plays back and you can understand it</li>
+        <li>The meter moves when you speak</li>
+        <li>You made one change of your own</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card warn" style="margin-top:20px"><p class="small"><strong>Listen critically.</strong> Is it clean, or is there a crackle? Is the pitch right? Tell the harness exactly what you hear.</p></div>
+</section>
+
+<section class="slide" data-sec="s03" data-note="s03-3">
+  <div class="kicker"><span class="chip">Stage 03</span> Wrinkles in sound</div>
+  <h2>Why did it crackle?</h2>
+  <div class="cols">
+    <div class="wrinkle" style="grid-template-columns:1fr">
+      <div class="w"><b>The speaker does not copy your samples</b><span>You hand it a buffer and it plays from that memory later. Refill the buffer too soon and you overwrite sound that is still waiting to play. <em>Use three buffers and wait for a free slot.</em></span></div>
+      <div class="w"><b>One audio bus, two devices</b><span>The mic and the speaker share it. Only one can be running. <em>End one before you begin the other.</em></span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>The pattern</h3><p class="small">A library call that looked harmless had a rule nobody wrote in the function name. The harness guessed, and guessed wrong, with total confidence.</p></div>
+      <div class="card"><h3>What fixed it</h3><p class="small">A human said "it crackles". The harness then read the library source and found the rule. Your ears were the test.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= STAGE 04 ======================= -->
+<section class="slide section-slide" data-sec="s04" data-note="s04-1">
+  <div class="kicker"><span class="chip">Stage 04</span> Voice assistant</div>
+  <div class="num">04</div>
+  <h2>Talk to it. It talks back.</h2>
+  <p class="lead">A live spoken conversation between your CoreS3 and an ElevenLabs agent.</p>
+</section>
+
+<section class="slide" data-sec="s04" data-note="s04-2">
+  <div class="kicker"><span class="chip">Stage 04</span> How a conversation flows</div>
+  <h2>One WebSocket, audio both ways</h2>
+  <div class="flow">
+    <div class="node"><b>Microphone</b>16 kHz audio in 128 ms chunks</div>
+    <div class="arrow"><i>&rarr;</i>base64 JSON</div>
+    <div class="node"><b>WebSocket</b>one secure connection, kept open</div>
+    <div class="arrow"><i>&rarr;</i></div>
+    <div class="node"><b>ElevenLabs agent</b>hears, thinks, speaks</div>
+  </div>
+  <div class="flow" style="margin-top:10px">
+    <div class="node"><b>Speaker</b>plays from a buffer in PSRAM</div>
+    <div class="arrow"><i>&larr;</i>audio</div>
+    <div class="node"><b>WebSocket</b>replies arrive faster than real time</div>
+    <div class="arrow"><i>&larr;</i></div>
+    <div class="node"><b>ElevenLabs agent</b>also sends the transcript</div>
+  </div>
+  <div class="cols3" style="margin-top:26px">
+    <div class="card"><h3>Half-duplex</h3><p class="small">One audio bus, so the mic is off while the agent speaks. No interrupting.</p></div>
+    <div class="card"><h3>The agent decides turns</h3><p class="small">You just keep streaming. It works out when you have finished.</p></div>
+    <div class="card"><h3>Ping, pong</h3><p class="small">The server checks you are alive. No reply, no conversation.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s04" data-note="s04-3">
+  <div class="kicker"><span class="chip">Stage 04</span> Make an agent</div>
+  <h2>Your agent, in your ElevenLabs account</h2>
+  <div class="cols wide-left">
+    <div>
+      <ol class="small">
+        <li>Sign in at <strong>elevenlabs.io</strong> and open <strong>Agents</strong>.</li>
+        <li><strong>Browse templates</strong> &rarr; <strong>Personal Voice Assistant</strong> &rarr; <strong>Use template</strong>. Skip the Zendesk step.</li>
+        <li>Try it in the browser <strong>Preview</strong> first.</li>
+        <li><strong>Agent id</strong>: on the Agents list, the <strong>&hellip;</strong> menu &rarr; <strong>Copy agent JSON config</strong>. The id is at the top and starts <code>agent_</code>.</li>
+        <li><strong>API key</strong>: profile menu &rarr; API Keys &rarr; create one. Copy it now; it is shown once.</li>
+        <li>Put both in <code>secrets.h</code>.</li>
+      </ol>
+    </div>
+    <figure>
+      <img class="contain" src="assets/stage04-elevenlabs-template-personal-voice-assistant.png" alt="The ElevenLabs template browser with the Personal Voice Assistant template selected and its workflow preview">
+      <figcaption>The template to pick.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="slide" data-sec="s04" data-note="s04-4">
+  <div class="kicker"><span class="chip">Stage 04</span> Mind your credits</div>
+  <h2>A conversation costs money while it is open</h2>
+  <div class="cols">
+    <div>
+      <div class="big">~1,000<small>credits a minute</small></div>
+      <p style="margin-top:18px">A free account has <strong>10,000</strong> a month. That is about <strong>ten minutes of talking</strong>, whether or not anyone is speaking.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>The firmware looks after you</h3><ul class="small"><li>The status bar counts the seconds</li><li>Ends after 20 seconds of nobody speaking</li><li>No conversation runs past 90 seconds</li></ul></div>
+      <div class="card warn"><h3>You look after you</h3><ul class="small"><li>Short, deliberate conversations</li><li>Tap <strong>End</strong> when you are done</li><li>Ran out? Hand up. There is a spare.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s04" data-note="s04-5">
+  <div class="kicker"><span class="chip">Stage 04</span> Run it</div>
+  <h2>Say hello</h2>
+  <div class="cols wide-left">
+    <div>
+      <pre class="cmd">cd "Reference Implementations/04-assistant"</pre>
+      <pre class="cmd">pio run -t upload</pre>
+      <ul class="small">
+        <li>Tap <strong>Talk</strong>. It joins Wi-Fi, connects, and the agent greets you.</li>
+        <li>Bar says <strong>LISTEN</strong>: speak. Bar says <strong>AGENT</strong>: it is talking.</li>
+        <li>Your words and its reply appear in the log.</li>
+        <li>Tap <strong>End</strong>, or just say goodbye.</li>
+      </ul>
+      <p class="small muted">Want to build it yourself instead? The prompt is in <code>fallback-prompts/04-voice-assistant.md</code>.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>Done when</h3><ul class="done small"><li>You have had a spoken conversation</li><li>You changed one thing</li></ul></div>
+      <div class="card"><h3>Change one thing</h3><ul class="small"><li>The agent's voice or personality (no reflash)</li><li>Show the conversation length on screen</li><li>Save the transcript to the SD card</li><li>Tap to interrupt the agent</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s04" data-note="s04-6">
+  <div class="kicker"><span class="chip">Stage 04</span> The wrinkle that needed new code</div>
+  <h2>The library everyone uses said no</h2>
+  <div class="cols">
+    <div>
+      <p>The agent sends its voice in messages of <strong>hundreds of kilobytes</strong>.</p>
+      <p>The most popular Arduino WebSocket library refuses anything over <strong>15 KB</strong>, with no setting to change it.</p>
+      <p class="muted">The connection opened. The greeting never played. Nothing in the build warned us.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card accent"><h3>What we did</h3><p class="small">Had the harness write a small WebSocket client of our own, about 150 lines, that keeps big messages in PSRAM. It is <code>ws_client.h</code> in the stage 04 folder.</p></div>
+      <div class="card"><h3>What to take from it</h3><p class="small">"Use the standard library" is the right first move and sometimes the wrong last one. Reading a dependency's source is cheap now. Ask for it.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= STAGE 05 ======================= -->
+<section class="slide section-slide" data-sec="s05" data-note="s05-1">
+  <div class="kicker"><span class="chip">Stage 05</span> Stretch</div>
+  <div class="num">05</div>
+  <h2>It listens. It acts.</h2>
+  <p class="lead">Wake on sound without burning credits, and let the agent run code on your device.</p>
+</section>
+
+<section class="slide" data-sec="s05" data-note="s05-2">
+  <div class="kicker"><span class="chip">Stage 05</span> Two ideas</div>
+  <h2>Wait locally. Connect late. Give it hands.</h2>
+  <div class="cols">
+    <div class="card accent">
+      <h3>Auto mode</h3>
+      <p class="small">An open conversation costs credits even in silence. So the device listens <strong>by itself</strong>, with a simple loudness check, and only connects when it hears you.</p>
+      <ul class="small"><li>Tap <strong>Auto</strong>. Speak above the red line.</li><li>It connects, the agent greets you.</li><li>Afterwards it goes back to waiting.</li></ul>
+    </div>
+    <div class="card accent">
+      <h3>Client tools</h3>
+      <p class="small">The agent can call functions that run <strong>on the device</strong>. It sends a name, your code runs, the result goes back for it to talk about.</p>
+      <table style="font-size:22px"><tbody>
+        <tr><td><code>start_recording</code></td><td>Record the conversation to SD</td></tr>
+        <tr><td><code>stop_recording</code></td><td>Stop and save</td></tr>
+        <tr><td><code>get_device_status</code></td><td>Battery, Wi-Fi, uptime</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <pre class="cmd" style="margin-top:22px">cd "Reference Implementations/05-always-listening"   &amp;&amp;   pio run -t upload</pre>
+</section>
+
+<section class="slide" data-sec="s05" data-note="s05-3">
+  <div class="kicker"><span class="chip">Stage 05</span> Add a tool of your own</div>
+  <h2>A tool is a name, a few lines, and a sentence</h2>
+  <div class="cols">
+    <div>
+      <h3>On the device</h3>
+      <p class="small">Find <code>runTool()</code> in <code>src/main.cpp</code>. Match the name, do the thing, return a short sentence the agent can read out.</p>
+      <blockquote class="prompt">Add a client tool called set_screen_color with a string parameter "color". Fill the log area with that colour for two seconds and return a short sentence. Then tell me exactly what to enter for the matching tool on my ElevenLabs agent.</blockquote>
+    </div>
+    <div>
+      <h3>On the agent</h3>
+      <ul class="small">
+        <li>Agent &rarr; <strong>Tools</strong> &rarr; <strong>Add Tool</strong> &rarr; type <strong>Client</strong></li>
+        <li>The <strong>name must match exactly</strong>, including case</li>
+        <li>Tick <strong>Wait for response</strong> so the agent hears the result</li>
+        <li>Write the description as an instruction: when should it call this?</li>
+      </ul>
+      <div class="card" style="margin-top:18px"><p class="small">Guide: <strong>elevenlabs.io/docs/eleven-agents/customization/tools/client-tools</strong></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="s05" data-note="s05-4">
+  <div class="kicker">Hack time</div>
+  <h2>Pick something and build it</h2>
+  <div class="cols3">
+    <div class="card"><h3>Make it yours</h3><ul class="small"><li>A new voice and personality</li><li>A tool that changes the screen</li><li>A tool that plays a sound</li></ul></div>
+    <div class="card"><h3>Make it better</h3><ul class="small"><li>Tap to interrupt the agent</li><li>Transcripts saved to SD</li><li>A wake that ignores door slams</li></ul></div>
+    <div class="card"><h3>Make it stranger</h3><ul class="small"><li>The agent narrates the story model</li><li>Two devices talking to each other</li><li>Your idea here</li></ul></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="card accent"><p><strong>In ten minutes:</strong> show and tell. One thing you built, and one thing that surprised you about working this way.</p></div>
+</section>
+
+<!-- ======================= WRAP ======================= -->
+<section class="slide" data-sec="wrap" data-note="wrap-1">
+  <div class="kicker">Looking back</div>
+  <h2>What did we actually learn?</h2>
+  <div class="cols">
+    <div>
+      <h3>What the harness was good at</h3>
+      <ul class="small">
+        <li>Getting to a working first version, fast</li>
+        <li>Boilerplate: UI layout, file formats, protocols</li>
+        <li>Reading a library's source to find a hidden rule</li>
+        <li>Testing its own work, when given a way to</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Where it needed you</h3>
+      <ul class="small">
+        <li>Anything only visible on the device: colour, layout, sound</li>
+        <li>Unwritten hardware rules: the shared audio bus, the partition size</li>
+        <li>Confident guesses about libraries that turned out wrong</li>
+        <li>Knowing when "it compiled" was not the same as "it works"</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card accent" style="margin-top:24px"><p><strong>The skill is the loop:</strong> describe, build, flash, look, say what you see, and write down what you learned.</p></div>
+</section>
+
+<section class="slide" data-sec="wrap" data-note="wrap-2">
+  <div class="kicker">What next</div>
+  <h2>Where to take it from here</h2>
+  <div class="cols3">
+    <div class="card"><h3>Local wake word</h3><p class="small">Espressif's ESP-SR spots a wake word and a few commands on the chip, with no network. It needs the ESP-IDF toolchain.</p></div>
+    <div class="card"><h3>Microphone focus</h3><p class="small">Two microphones can be combined to favour one direction. Signal processing rather than plumbing.</p></div>
+    <div class="card"><h3>More on the device</h3><p class="small">You ran a language model on the chip in stage 01. How much of an assistant could live there?</p></div>
+  </div>
+  <div class="cols" style="margin-top:26px">
+    <div>
+      <h3>Keep the habits</h3>
+      <ul class="small"><li>Outcome and test in every prompt</li><li>A <code>CLAUDE.md</code> for every project with hardware in it</li><li>Flash and look before you believe</li></ul>
+    </div>
+    <div>
+      <h3>Keep the code</h3>
+      <ul class="small"><li>The repo stays public: every stage, prompt and reference</li><li><code>stages/06-stretch</code> has more ideas</li><li>Fork it and make <code>my-work/</code> your own</li></ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide title-slide" data-sec="wrap" data-note="wrap-3">
+  <div class="kicker">Thank you</div>
+  <div class="rule"></div>
+  <h1 style="font-size:92px">Keep building.</h1>
+  <p class="lead">Everything from today is in the repo.</p>
+  <pre class="cmd" style="max-width:1100px;font-size:32px;margin-top:10px">github.com/strangedevices/ESP32AI_Intro</pre>
+  <div class="cols3" style="margin-top:22px">
+    <div class="card accent"><h3>Want a CoreS3?</h3><p class="small">A limited number are available now at our cost.</p></div>
+    <div class="card accent"><h3>Before you go</h3><p class="small">Delete your API key if you shared a screen. Turn off your hotspot.</p></div>
+    <div class="card accent"><h3>Questions</h3><p class="small">Find me now, or through Web Directions.</p></div>
+  </div>
+</section>
+
+<div id="foot"><span id="footSec"></span><span><span class="clock" id="footClock"></span>&nbsp;&nbsp;<span id="footNum"></span></span></div>
+<div id="bar"></div>
+</div></div>
+
+<div id="notesDrawer"><h4>Presenter notes</h4><div class="notes-body" id="drawerBody"></div></div>
+<div id="overview"><div id="ovGrid"></div></div>
+<div id="help"><div class="box">
+  <h3>Keys</h3>
+  <table>
+    <tr><td><kbd>&rarr;</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Next slide</td></tr>
+    <tr><td><kbd>&larr;</kbd> <kbd>PgUp</kbd></td><td>Previous slide</td></tr>
+    <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last slide</td></tr>
+    <tr><td><kbd>P</kbd></td><td>Open the presenter window (notes, next slide, timer)</td></tr>
+    <tr><td><kbd>S</kbd></td><td>Start the workshop timer. <kbd>Shift</kbd>+<kbd>S</kbd> resets it</td></tr>
+    <tr><td><kbd>C</kbd></td><td>Show or hide the clock on the slides</td></tr>
+    <tr><td><kbd>O</kbd></td><td>Overview of all slides</td></tr>
+    <tr><td><kbd>N</kbd></td><td>Notes drawer in this window</td></tr>
+    <tr><td><kbd>T</kbd></td><td>Light / dark theme</td></tr>
+    <tr><td><kbd>F</kbd></td><td>Full screen</td></tr>
+    <tr><td><kbd>?</kbd> <kbd>Esc</kbd></td><td>Show / close this help</td></tr>
+  </table>
+</div></div>
+
+<div id="pv">
+  <div id="pvBar">
+    <span class="t" id="pvElapsed">0:00</span>
+    <span class="plan" id="pvPlan">timer not started</span>
+    <span id="pvWall"></span>
+    <button id="pvStart">Start timer</button>
+    <button id="pvPrev">&larr; Prev</button>
+    <button id="pvNextBtn">Next &rarr;</button>
+    <span id="pvNum"></span>
+    <span><kbd>&larr;</kbd> <kbd>&rarr;</kbd> move both windows</span>
+  </div>
+  <div id="pvLeft">
+    <div class="pvLabel">Now showing</div>
+    <div class="pvFrame" id="pvCur"></div>
+    <div id="pvSecs"></div>
+  </div>
+  <div id="pvRight">
+    <div class="pvLabel">Next</div>
+    <div class="pvFrame" id="pvNext" style="width:62%"></div>
+    <div class="pvLabel">Notes</div>
+    <div id="pvNotes"><div class="notes-body" id="pvNotesBody"></div></div>
+  </div>
+</div>
+
+<!-- Optional. Presenter notes are kept out of this repo; if a presenter-notes.js file is
+     placed beside this page it is used, otherwise the notes panels simply stay empty. -->
+<script src="presenter-notes.js" onerror="void 0"></script>
+<script>
+(function () {
+  "use strict";
+  // Sections and their time budgets in minutes. Edit here to re-plan the day.
+  var SECTIONS = [
+    { id: "welcome", name: "Welcome and aims",        min: 15, what: "Why we are here, the device, how today works" },
+    { id: "s00",     name: "Stage 00 - Setup",        min: 30, what: "Kit check, tools, first flash, secrets" },
+    { id: "s01",     name: "Stage 01 - First upload", min: 20, what: "A language model on the chip; your first change" },
+    { id: "break",   name: "Break",                   min: 15, what: "Tea, rescue, hotspots" },
+    { id: "s02",     name: "Stage 02 - Wi-Fi and UI", min: 30, what: "Build your own harness from a prompt" },
+    { id: "s03",     name: "Stage 03 - Recorder",     min: 30, what: "Microphones to SD card and back" },
+    { id: "s04",     name: "Stage 04 - Assistant",    min: 35, what: "Talk to an ElevenLabs agent" },
+    { id: "s05",     name: "Stage 05 and hack time",  min: 25, what: "Auto mode, agent tools, your own idea" },
+    { id: "wrap",    name: "Wrap-up",                 min: 10, what: "Show and tell, what next" }
+  ];
+  var acc = 0;
+  SECTIONS.forEach(function (s) { s.start = acc; acc += s.min; s.end = acc; });
+  var secById = {};
+  SECTIONS.forEach(function (s) { secById[s.id] = s; });
+
+  var PRESENTER = /[?&]presenter/.test(location.search);
+  var deck = document.getElementById("deck");
+  var slides = Array.prototype.slice.call(document.querySelectorAll("#deck > .slide"));
+  var idx = 0, startAt = null, showClock = false, peer = PRESENTER ? window.opener : null;
+  var $ = function (id) { return document.getElementById(id); };
+
+  var NO_NOTES = "<p>No presenter notes loaded.</p>";
+  function notesFor(i) {
+    var all = window.PRESENTER_NOTES || null;
+    if (!all) return NO_NOTES;
+    return all[slides[i].dataset.note] || "<p>No notes for this slide.</p>";
+  }
+
+  function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, String(v)); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  // ---- layout -------------------------------------------------------------
+  function fit() {
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    deck.style.transform = "scale(" + s + ")";
+    if (PRESENTER) renderPresenter();
+    if ($("overview").classList.contains("open")) scaleThumbs($("ovGrid"));
+  }
+  function thumbInto(frame, i) {
+    frame.innerHTML = "";
+    if (i < 0 || i >= slides.length) { frame.style.visibility = "hidden"; return; }
+    frame.style.visibility = "visible";
+    var t = document.createElement("div");
+    t.className = "thumb";
+    var c = slides[i].cloneNode(true);
+    c.classList.add("active");
+    c.querySelectorAll("[id]").forEach(function (n) { n.removeAttribute("id"); });
+    t.appendChild(c);
+    frame.appendChild(t);
+    t.style.transform = "scale(" + (frame.clientWidth / 1600) + ")";
+  }
+  function scaleThumbs(root) {
+    root.querySelectorAll(".thumb").forEach(function (t) {
+      t.style.transform = "scale(" + (t.parentNode.clientWidth / 1600) + ")";
+    });
+  }
+
+  // ---- navigation ---------------------------------------------------------
+  function send(msg) { try { if (peer && !peer.closed) peer.postMessage(msg, "*"); } catch (e) {} }
+  function go(i, remote) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, j) { s.classList.toggle("active", j === idx); });
+    var sec = secById[slides[idx].dataset.sec];
+    $("footSec").textContent = sec ? sec.name : "";
+    $("footNum").textContent = (idx + 1) + " / " + slides.length;
+    $("bar").style.width = ((idx + 1) / slides.length * 100) + "%";
+    $("drawerBody").innerHTML = notesFor(idx);
+    try { history.replaceState(null, "", "#" + (idx + 1)); } catch (e) {}
+    if (!remote) send({ type: "go", i: idx });
+    tick();
+    if (PRESENTER) renderPresenter();
+  }
+
+  // ---- timer --------------------------------------------------------------
+  function fmt(ms) {
+    var neg = ms < 0; ms = Math.abs(ms);
+    var m = Math.floor(ms / 60000), h = Math.floor(m / 60);
+    var s = Math.floor(ms / 1000) % 60;
+    return (neg ? "-" : "") + (h ? h + ":" + String(m % 60).padStart(2, "0") : String(m)) + ":" + String(s).padStart(2, "0");
+  }
+  function clockAt(min) {
+    var d = new Date(startAt + min * 60000);
+    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+  function planText() {
+    if (!startAt) return { text: "timer not started", behind: false };
+    var el = (Date.now() - startAt) / 60000, sec = secById[slides[idx].dataset.sec];
+    if (!sec) return { text: "", behind: false };
+    if (el < sec.start) return { text: Math.round(sec.start - el) + " min ahead of plan", behind: false };
+    if (el > sec.end)   return { text: Math.round(el - sec.end) + " min behind plan", behind: true };
+    return { text: Math.ceil(sec.end - el) + " min left in " + sec.name.replace(/ - .*/, ""), behind: false };
+  }
+  function setTimer(t, remote) {
+    startAt = t;
+    store("ws.startAt", t);
+    if (t && !showClock) showClock = true;
+    if (!remote) send({ type: "timer", t: t });
+    renderSchedule();
+    tick();
+  }
+  function tick() {
+    var p = planText();
+    var fc = $("footClock");
+    if (startAt && showClock) { fc.textContent = fmt(Date.now() - startAt) + "  " + p.text; fc.className = "clock" + (p.behind ? " behind" : ""); }
+    else fc.textContent = "";
+    var bb = $("breakBack");
+    if (bb) bb.textContent = startAt ? clockAt(secById["break"].end) : "the time on the clock";
+    if (PRESENTER) {
+      $("pvElapsed").textContent = startAt ? fmt(Date.now() - startAt) : "0:00";
+      $("pvPlan").textContent = p.text; $("pvPlan").className = "plan" + (p.behind ? " behind" : "");
+      $("pvWall").textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      $("pvStart").textContent = startAt ? "Reset timer" : "Start timer";
+    }
+    document.querySelectorAll("#schedule tbody tr").forEach(function (tr) {
+      var s = secById[tr.dataset.sec], el = startAt ? (Date.now() - startAt) / 60000 : -1;
+      tr.classList.toggle("now", el >= s.start && el < s.end);
+    });
+  }
+  function renderSchedule() {
+    var tb = document.querySelector("#schedule tbody");
+    if (!tb) return;
+    tb.innerHTML = "";
+    SECTIONS.forEach(function (s) {
+      var tr = document.createElement("tr");
+      tr.dataset.sec = s.id;
+      var when = startAt ? clockAt(s.start) : "+" + Math.floor(s.start / 60) + ":" + String(s.start % 60).padStart(2, "0");
+      tr.innerHTML = '<td class="num">' + when + "</td><td><strong>" + s.name + '</strong></td><td class="num">' + s.min + "</td><td>" + s.what + "</td>";
+      tb.appendChild(tr);
+    });
+    var note = $("schedNote");
+    if (note) note.textContent = startAt ? "Finishing at " + clockAt(acc) + "." : "Times are offsets from when we start. " + acc + " minutes in all.";
+  }
+
+  // ---- presenter window -----------------------------------------------------
+  function renderPresenter() {
+    thumbInto($("pvCur"), idx);
+    thumbInto($("pvNext"), idx + 1);
+    $("pvNotesBody").innerHTML = notesFor(idx);
+    $("pvNum").textContent = "Slide " + (idx + 1) + " of " + slides.length;
+    var cur = slides[idx].dataset.sec;
+    $("pvSecs").innerHTML = SECTIONS.map(function (s) {
+      return '<span class="' + (s.id === cur ? "cur" : "") + '">' + s.name.replace(/ - .*/, "").replace(" and aims", "") + " " + s.min + "m</span>";
+    }).join("");
+  }
+  function openPresenter() {
+    var url = location.href.split("#")[0].split("?")[0] + "?presenter#" + (idx + 1);
+    peer = window.open(url, "workshopPresenter", "width=1280,height=820");
+  }
+
+  // ---- overview ---------------------------------------------------------------
+  function toggleOverview(force) {
+    var ov = $("overview"), open = force !== undefined ? force : !ov.classList.contains("open");
+    ov.classList.toggle("open", open);
+    if (!open) return;
+    var g = $("ovGrid");
+    g.innerHTML = "";
+    slides.forEach(function (s, i) {
+      var it = document.createElement("div");
+      it.className = "ovItem" + (i === idx ? " cur" : "");
+      it.innerHTML = '<span class="tag">' + (i + 1) + "</span>";
+      it.addEventListener("click", function () { toggleOverview(false); go(i); });
+      g.appendChild(it);
+      thumbInto(it, i);
+      it.insertAdjacentHTML("afterbegin", '<span class="tag">' + (i + 1) + "</span>");
+    });
+    var cur = g.querySelector(".cur");
+    if (cur) cur.scrollIntoView({ block: "center" });
+  }
+
+  // ---- copy buttons --------------------------------------------------------------
+  document.querySelectorAll("#deck pre.cmd").forEach(function (pre) {
+    var b = document.createElement("button");
+    b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+    b.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      var text = Array.prototype.filter.call(pre.childNodes, function (n) {
+        return !(n.nodeType === 1 && (n.classList.contains("copy") || n.classList.contains("os")));
+      }).map(function (n) { return n.textContent; }).join("").trim();
+      var done = function () { b.textContent = "Copied"; b.classList.add("ok"); setTimeout(function () { b.textContent = "Copy"; b.classList.remove("ok"); }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+      else fallback();
+      function fallback() {
+        var ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) {}
+        ta.remove();
+      }
+    });
+    pre.appendChild(b);
+  });
+
+  // ---- input ------------------------------------------------------------------------
+  function setTheme(t) { document.documentElement.dataset.theme = t; store("ws.theme", t); }
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { $("help").classList.remove("open"); toggleOverview(false); $("notesDrawer").classList.remove("open"); return; }
+    if (k === "ArrowRight" || k === " " || k === "PageDown") { go(idx + 1); e.preventDefault(); }
+    else if (k === "ArrowLeft" || k === "PageUp") { go(idx - 1); e.preventDefault(); }
+    else if (k === "Home") go(0);
+    else if (k === "End") go(slides.length - 1);
+    else if (k === "o" || k === "O") toggleOverview();
+    else if (k === "n" || k === "N") $("notesDrawer").classList.toggle("open");
+    else if (k === "p" || k === "P") { if (!PRESENTER) openPresenter(); }
+    else if (k === "S") { if (confirm("Reset the workshop timer?")) setTimer(null); }
+    else if (k === "s") { if (!startAt) setTimer(Date.now()); }
+    else if (k === "c" || k === "C") { showClock = !showClock; tick(); }
+    else if (k === "t" || k === "T") setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+    else if (k === "f" || k === "F") { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }
+    else if (k === "?") $("help").classList.toggle("open");
+  });
+  $("help").addEventListener("click", function () { $("help").classList.remove("open"); });
+  window.addEventListener("message", function (e) {
+    var m = e.data || {};
+    if (m.type === "go") go(m.i, true);
+    else if (m.type === "timer") setTimer(m.t, true);
+    else if (m.type === "hello") { peer = e.source; send({ type: "go", i: idx }); send({ type: "timer", t: startAt }); }
+  });
+  window.addEventListener("resize", fit);
+
+  // ---- start ---------------------------------------------------------------------------
+  if (load("ws.theme")) document.documentElement.dataset.theme = load("ws.theme");
+  var saved = Number(load("ws.startAt"));
+  if (saved && Date.now() - saved < 8 * 3600 * 1000) { startAt = saved; showClock = true; }
+  if (PRESENTER) {
+    document.body.classList.add("presenter");
+    document.title = "Presenter - " + document.title;
+    $("pvStart").addEventListener("click", function () {
+      if (!startAt) setTimer(Date.now());
+      else if (confirm("Reset the workshop timer?")) setTimer(null);
+    });
+    $("pvPrev").addEventListener("click", function () { go(idx - 1); });
+    $("pvNextBtn").addEventListener("click", function () { go(idx + 1); });
+    send({ type: "hello" });
+  }
+  renderSchedule();
+  var h = parseInt(location.hash.slice(1), 10);
+  go(isNaN(h) ? 0 : h - 1, true);
+  fit();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
