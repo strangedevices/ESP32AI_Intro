@@ -34,6 +34,17 @@
 
 static const char *EL_HOST = "api.elevenlabs.io";
 
+// ---- credit guards -----------------------------------------------------------
+// A conversation costs ElevenLabs credits for as long as it is open (roughly 1000 credits
+// a minute in our tests; a free account has 10,000). These limits stop a forgotten
+// conversation from emptying your account.
+static const uint32_t MAX_SESSION_S = 90;         // hard cap on one conversation
+static const uint32_t IDLE_END_S    = 20;         // end if nobody has spoken for this long
+
+// ---- speaker -----------------------------------------------------------------
+static const uint8_t  SPEAKER_VOLUME = 100;       // 0-255. Agent speech is loud; higher clips.
+static const uint32_t PREBUFFER_MS   = 300;       // audio to collect before starting to play
+
 // ---- audio -------------------------------------------------------------------
 static const size_t MIC_CHUNK  = 2048;            // samples per mic chunk (128 ms at 16 kHz)
 static const size_t PLAY_CHUNK = 2048;
@@ -53,7 +64,7 @@ static Mode mode = IDLE;
 static WsClient ws;
 static bool session = false;
 static bool wantWifi = false;
-static uint32_t lastAudioMs = 0, transcriptMs = 0, sessionStart = 0;
+static uint32_t lastAudioMs = 0, transcriptMs = 0, sessionStart = 0, lastActivityMs = 0;
 static uint32_t audioBytesIn = 0, chunksOut = 0;
 
 enum { BTN_WIFI, BTN_TALK, BTN_CLEAR, N_BTN };
@@ -71,13 +82,17 @@ static void say(uint32_t color, const char *who, const char *text) {
 
 // ---- status bar ----------------------------------------------------------------
 static void updateStatusBar() {
+  char buf[32];
+  unsigned secs = (millis() - sessionStart) / 1000;
   if (mode == LISTENING) {
-    ui::status("LISTENING", ui::COL_GREEN);
-    int w = 70, x = ui::W - w - 6, y = 8, h = ui::BAR_H - 16;
+    snprintf(buf, sizeof buf, "LISTEN %us", secs);
+    ui::status(buf, ui::COL_GREEN);
+    int w = 60, x = ui::W - w - 6, y = 8, h = ui::BAR_H - 16;
     M5.Display.fillRect(x, y, w, h, TFT_BLACK);
     M5.Display.fillRect(x, y, (int)((long)w * peak / 32767), h, TFT_WHITE);
   } else if (mode == SPEAKING) {
-    ui::status("AGENT SPEAKING", ui::COL_PURPLE);
+    snprintf(buf, sizeof buf, "AGENT %us", secs);
+    ui::status(buf, ui::COL_PURPLE);
   } else if (WiFi.status() == WL_CONNECTED) {
     ui::status(WiFi.localIP().toString().c_str(), TFT_DARKGREEN);
   } else {
@@ -119,7 +134,7 @@ static void enterSpeaking() {
   while (M5.Mic.isRecording()) delay(1);
   M5.Mic.end();
   M5.Speaker.begin();
-  M5.Speaker.setVolume(150);
+  M5.Speaker.setVolume(SPEAKER_VOLUME);
   playIdx = 0;
   mode = SPEAKING;
   if (transcriptMs) { ui::log("(agent replied %lu ms after your words)", millis() - transcriptMs); transcriptMs = 0; }
@@ -178,7 +193,7 @@ static void onMessage(char *msg, size_t len) {
     if (mbedtls_base64_decode(pcm, cap, &out, (const unsigned char *)a, e - a) == 0) {
       ringPush((const int16_t *)pcm, out / 2);
       audioBytesIn += out;
-      lastAudioMs = millis();
+      lastAudioMs = lastActivityMs = millis();
     }
     free(pcm);
     return;
@@ -203,7 +218,7 @@ static void onMessage(char *msg, size_t len) {
     if (r) micRate = r; else ui::log("!! unsupported mic format");
   } else if (!strcmp(type, "user_transcript")) {
     say(TFT_CYAN, "You: ", doc["user_transcription_event"]["user_transcript"] | "");
-    transcriptMs = millis();
+    transcriptMs = lastActivityMs = millis();
   } else if (!strcmp(type, "agent_response")) {
     say(TFT_YELLOW, "Agent: ", doc["agent_response_event"]["agent_response"] | "");
   } else if (!strcmp(type, "interruption")) {
@@ -291,7 +306,7 @@ static void startSession() {
   ui::log("Connected in %lu ms. Say hello!", millis() - t0);
 
   session = true;
-  sessionStart = millis();
+  sessionStart = lastActivityMs = millis();
   audioBytesIn = 0; chunksOut = 0; ringCount = 0; ringHead = 0; transcriptMs = 0;
   buttons[BTN_TALK].label = "End";
   buttons[BTN_TALK].draw();
@@ -317,6 +332,11 @@ void setup() {
   ui::begin();
   ui::layoutButtons(buttons, N_BTN);
   ring = (int16_t *)ps_malloc(RING_SAMPLES * sizeof(int16_t));
+  // Larger I2S buffers for the speaker: more tolerant of the loop being busy with Wi-Fi.
+  auto spk = M5.Speaker.config();
+  spk.dma_buf_count = 16;
+  spk.dma_buf_len = 256;
+  M5.Speaker.config(spk);
   ws.onText = onMessage;
   ws.onIdle = pumpSpeaker;                          // keep audio flowing during big downloads
   updateStatusBar();
@@ -343,13 +363,22 @@ void loop() {
     return;
   }
 
-  // Turn-taking.
-  if (mode == LISTENING && ringCount) enterSpeaking();
+  // Credit guards.
+  if (millis() - sessionStart > MAX_SESSION_S * 1000) { endSession("time limit, tap Talk to go again"); return; }
+  if (mode == LISTENING && millis() - lastActivityMs > IDLE_END_S * 1000) { endSession("nobody spoke"); return; }
+
+  // Turn-taking. Wait for a little audio to build up before playing (or for the whole of
+  // a short reply), so playback does not stutter if the next message is slow to arrive.
+  if (mode == LISTENING && ringCount &&
+      (ringCount >= spkRate * PREBUFFER_MS / 1000 || millis() - lastAudioMs > 150))
+    enterSpeaking();
   pumpSpeaker();
-  if (mode == SPEAKING && ringCount == 0 && !M5.Speaker.isPlaying(0) && millis() - lastAudioMs > 300)
+  if (mode == SPEAKING && ringCount == 0 && !M5.Speaker.isPlaying(0) && millis() - lastAudioMs > 300) {
+    lastActivityMs = millis();                      // the idle clock starts when the agent stops
     enterListening();
+  }
   pumpMic();
 
   static uint32_t lastBar = 0;
-  if (mode == LISTENING && millis() - lastBar > 150) { lastBar = millis(); updateStatusBar(); }
+  if (millis() - lastBar > (mode == LISTENING ? 150 : 1000)) { lastBar = millis(); updateStatusBar(); }
 }

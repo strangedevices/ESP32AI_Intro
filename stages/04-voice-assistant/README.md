@@ -72,7 +72,15 @@ pio device monitor
 - Tap **End** to finish, or just say goodbye: the agent can hang up by itself.
 - Serial shortcuts: `t` talk/end, `w` Wi-Fi, `c` clear.
 
-Each conversation uses ElevenLabs credits. End it when you are not using it.
+## Mind your credits
+A conversation costs credits for as long as it is open: roughly 1,000 credits a minute in
+our tests. A free account has 10,000 a month, so you have about ten minutes of talking.
+Spend them on short, deliberate conversations.
+
+The firmware protects you: the status bar shows the seconds used, a conversation ends by
+itself after 20 seconds of silence, and no conversation runs longer than 90 seconds. The
+limits are `IDLE_END_S` and `MAX_SESSION_S` at the top of `src/main.cpp`. Check what you
+have left under your profile in the ElevenLabs dashboard.
 
 ## How it works
 - `src/ws_client.h` is a small WebSocket client written for this workshop. The usual
@@ -100,6 +108,7 @@ You have had a spoken conversation with your agent on the device and made one ch
 ## Stuck?
 - "Signed URL: HTTP 401": the API key is wrong or lacks agent permission.
 - "Signed URL: HTTP 404": the agent id is wrong, or the agent belongs to another account.
+- Crackly or distorted voice: lower `SPEAKER_VOLUME` at the top of `src/main.cpp`.
 - Connects but silent: check the log line "Agent audio pcm_16000"; other formats need the
   agent's output format changed in the dashboard.
 - See `fallback-prompts/04-voice-assistant.md`.
