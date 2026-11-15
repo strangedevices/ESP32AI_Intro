@@ -78,10 +78,10 @@ driver from the M5Stack download page.
 ## At home: clone and build once
 
 ```bash
-git clone https://github.com/strangedevices/ESP32-AI-Workshop-Participant.git
+git clone https://github.com/strangedevices/ESP32AI_Intro.git
 ```
 ```bash
-cd "ESP32-AI-Workshop-Participant/Reference Implementations/00-hello"
+cd "ESP32AI_Intro/Reference Implementations/00-hello"
 ```
 ```bash
 pio run
