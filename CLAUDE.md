@@ -5,8 +5,9 @@ This is a PlatformIO project for the M5Stack CoreS3 / CoreS3 SE (ESP32-S3).
 - Board config lives in platformio.ini; build with `pio run`, flash with `pio run -t upload`,
   serial with `pio device monitor -b 115200`.
 - Credentials (Wi-Fi, ElevenLabs API key and agent id) live in ONE gitignored file shared by
-  every stage: `Reference Implementations/secrets.h`, created from `secrets.h.example`.
-  Each stage's platformio.ini has `build_flags = -I..` so `#include "secrets.h"` finds it.
+  every project: `secrets.h` in the repo's top folder, created from `secrets.h.example`.
+  Every project sits two folders down (`Reference Implementations/NN-name` or
+  `my-work/NN-name`) and has `build_flags = -I../..` so `#include "secrets.h"` finds it.
   Never commit it, never print its contents, and do not copy keys into source files.
 - Prefer M5.Mic / M5.Speaker from M5Unified over raw I2S for audio. Mic and speaker share
   one I2S bus on the CoreS3: end one before beginning the other.

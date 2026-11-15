@@ -197,7 +197,7 @@ static void wifiToggle() {
     wantWifi = false; WiFi.disconnect(true); WiFi.mode(WIFI_OFF);
     ui::log("WiFi: disconnected");
   } else {
-    if (strlen(WIFI_SSID) == 0) { ui::log("No credentials: create ../secrets.h"); return; }
+    if (strlen(WIFI_SSID) == 0) { ui::log("No credentials: create secrets.h (repo top folder)"); return; }
     wantWifi = true; connectStart = millis();
     WiFi.mode(WIFI_STA); WiFi.begin(WIFI_SSID, WIFI_PASS);
     ui::log("WiFi: connecting");

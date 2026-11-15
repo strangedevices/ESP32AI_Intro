@@ -5,7 +5,7 @@ Run `claude` inside `Reference Implementations/05-always-listening` and paste:
 ```
 This PlatformIO project is an ElevenLabs voice assistant on an M5Stack CoreS3 with an Auto
 mode (local loudness wake) and client tools the agent can call (src/main.cpp runTool()).
-../secrets.h holds my credentials: never read, print or edit it. Conversations cost credits,
+secrets.h in the repo's top folder holds my credentials: never read, print or edit it. Conversations cost credits,
 so do NOT start one. Please:
 1. Run `pio run` and fix any build error.
 2. Flash with `pio run -t upload`, open the serial port at 115200 without toggling DTR/RTS.

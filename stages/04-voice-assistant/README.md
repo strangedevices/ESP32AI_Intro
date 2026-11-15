@@ -35,7 +35,7 @@ In ElevenLabs, open your profile menu, then **API Keys**, and create a key. Copy
 straight away; it is only shown once.
 
 ## Setup part 4: put both in secrets.h
-Open `Reference Implementations/secrets.h` (the file you made in stage 02 from
+Open `secrets.h` in the top folder of the repo (the file you made in stage 02 from
 `secrets.h.example`) and fill in:
 
 ```c

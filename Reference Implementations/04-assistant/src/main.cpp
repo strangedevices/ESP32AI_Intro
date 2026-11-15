@@ -234,7 +234,7 @@ static void onMessage(char *msg, size_t len) {
 // ---- conversation start / end -----------------------------------------------------------
 static bool waitForWifi() {
   if (WiFi.status() == WL_CONNECTED) return true;
-  if (strlen(WIFI_SSID) == 0) { ui::log("No Wi-Fi details: edit ../secrets.h"); return false; }
+  if (strlen(WIFI_SSID) == 0) { ui::log("No Wi-Fi details: edit secrets.h (repo top folder)"); return false; }
   wantWifi = true;
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -288,7 +288,7 @@ static void endSession(const char *why) {
 
 static void startSession() {
   if (strlen(ELEVENLABS_API_KEY) < 10 || strlen(ELEVENLABS_AGENT_ID) < 10) {
-    ui::log("No ElevenLabs key/agent: edit ../secrets.h");
+    ui::log("No ElevenLabs key/agent: edit secrets.h (repo top folder)");
     return;
   }
   if (!waitForWifi()) return;

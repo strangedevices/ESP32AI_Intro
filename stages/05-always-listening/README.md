@@ -20,7 +20,7 @@ pio run -t upload
 pio device monitor
 ```
 
-It uses the same `Reference Implementations/secrets.h` as before, and needs the SD card
+It uses the same top-folder `secrets.h` as before, and needs the SD card
 for the recording tools.
 
 ## Part 1: Auto mode
@@ -40,11 +40,27 @@ seconds of credits before the silence guard ends the call (12 seconds of listeni
 nobody speaking).
 
 ## Part 2: Give your agent tools
+ElevenLabs calls these **client tools**: functions that run on the client (here, your
+CoreS3) when the agent decides to call them. The agent sends the tool's name and
+arguments over the WebSocket, the device runs its code, and the result goes back so the
+agent can talk about it. Read the official guide while you do this part:
+https://elevenlabs.io/docs/eleven-agents/customization/tools/client-tools
+
+Things from that guide worth knowing:
+- The name on the agent and the name in your code must match exactly, including case.
+- Tick **Wait for response** if the agent should hear the result. Without it the tool
+  just runs and the agent carries on.
+- Write the description as an instruction: say when the agent should call the tool.
+  Give every parameter a description too, with its format.
+- Add a line to the agent's system prompt about when to use its tools.
+- Server-side API calls are a different kind of tool (webhook tools); client tools are
+  for things only the device can do.
+
 The device already knows three tools. You tell the agent they exist.
 
-In the ElevenLabs dashboard, open your agent, find its **Tools** section, and add a
-**Client** tool for each of these. The name must match exactly. None need parameters.
-Turn on the option to wait for the tool's response, so the agent hears the result.
+In the ElevenLabs dashboard, open your agent, go to its **Tools** section, press
+**Add Tool** and set **Tool Type** to **Client**. Do that for each tool below. None need
+parameters. Tick **Wait for response** on each.
 
 | Name | Description to give the agent |
 |---|---|

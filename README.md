@@ -20,12 +20,15 @@ at the venue will cost you most of the first hour.
 | 05 | Always listening | Activity-triggered conversation and tool calls |
 | 06 | Stretch | Ideas to take home |
 
-Each stage folder has a README with the goal and setup, and `fallback-prompts/` has a
-prompt you can paste into Claude Code if you get stuck. Try it yourself first.
-`Reference Implementations/` holds working builds of every stage.
+Each stage folder has a README with the goal and setup. Try each stage yourself first in
+`my-work/`, using `starter-prompts/` or your own words. If you get stuck, `fallback-prompts/`
+and `Reference Implementations/` hold a working build of every stage.
 
 ## Layout
-- `stages/` - one folder per stage, in order.
-- `fallback-prompts/` - prompts to use if you get stuck.
+- `stages/` - one folder per stage, in order: what to do and what "done" looks like.
+- `my-work/` - where you build each stage yourself.
+- `starter-prompts/` - prompts to start building a stage yourself.
+- `fallback-prompts/` - prompts to get the reference implementation running if you are stuck.
 - `Reference Implementations/` - complete PlatformIO projects for each stage.
 - `tools/` - environment-check scripts.
+- `secrets.h.example` - copy to `secrets.h` (never committed) for Wi-Fi and ElevenLabs details.
