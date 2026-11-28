@@ -112,6 +112,13 @@ Everything should say OK.
    screen, speaker and touch work.
 2. Insert the microSD card (FAT32). The factory demo should show it. **This matters:**
    later stages record to it.
+   If you bring your own card: cards of 32 GB or less come as FAT32 and just work.
+   Bigger cards (64 GB and up) come as exFAT, which the ESP32 SD library cannot read,
+   so the card is not seen. Reformat it as FAT32 first; this erases it.
+   - macOS: Disk Utility, View > Show All Devices, select the card itself (not the
+     volume under it), Erase, Format "MS-DOS (FAT)", Scheme "Master Boot Record".
+   - Windows: File Explorer will not offer FAT32 above 32 GB. Use a FAT32 formatting
+     tool, or bring a 32 GB card.
 3. Turn on your phone hotspot (2.4 GHz, WPA2, simple password with no spaces). Connect
    your laptop to it as well. Hotel Wi-Fi will not work for the device.
 4. In the `00-hello` folder, run `pio run -t upload` then `pio device monitor`. You should
