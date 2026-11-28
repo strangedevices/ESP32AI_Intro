@@ -5,7 +5,8 @@
 // buffers each message in PSRAM, however large, and hands it to onText() when complete.
 //
 // Text frames only (that is all the agent protocol uses). Handles fragmentation, ping/pong
-// and close. Certificates are not verified (workshop only).
+// and close. Set caCert to verify the server's certificate; without it the
+// connection is encrypted but the server is not checked.
 #pragma once
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
@@ -18,10 +19,12 @@ class WsClient {
   typedef void (*IdleHook)();
   TextHandler onText = nullptr;   // called with a complete, NUL-terminated message
   IdleHook    onIdle = nullptr;   // called while waiting for the rest of a big message
+  const char *caCert = nullptr;   // PEM root certificate(s) to verify the server against
 
   bool connect(const char *host, uint16_t port, const char *path) {
     close();
-    client.setInsecure();
+    if (caCert) client.setCACert(caCert);
+    else client.setInsecure();
     if (!client.connect(host, port)) return false;
     client.setNoDelay(true);
 

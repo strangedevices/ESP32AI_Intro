@@ -22,6 +22,7 @@
 #include "mbedtls/base64.h"
 #include "ui.h"
 #include "ws_client.h"
+#include "ca_certs.h"
 
 #if __has_include("secrets.h")
 #include "secrets.h"
@@ -409,7 +410,7 @@ static bool waitForWifi() {
 // Ask the API for a signed wss:// URL. Returns the path part, or "" on failure.
 static String getSignedPath() {
   WiFiClientSecure tls;
-  tls.setInsecure();                                // workshop only: skip certificate check
+  tls.setCACert(ELEVENLABS_ROOT_CA);                // the API key goes in this request: verify the server
   HTTPClient http;
   http.setTimeout(10000);
   String url = String("https://") + EL_HOST + "/v1/convai/conversation/get-signed-url?agent_id=" + ELEVENLABS_AGENT_ID;
@@ -549,6 +550,7 @@ void setup() {
   SPI.begin(GPIO_NUM_36, GPIO_NUM_35, GPIO_NUM_37, GPIO_NUM_4);
   sdOk = SD.begin(GPIO_NUM_4, SPI, 25000000);
   ws.onText = onMessage;
+  ws.caCert = ELEVENLABS_ROOT_CA;
   ws.onIdle = pumpSpeaker;                          // keep audio flowing during big downloads
   updateStatusBar();
   ui::log("Stage 05 ready. SD card %s", sdOk ? "ok" : "MISSING (recording tools will fail)");
