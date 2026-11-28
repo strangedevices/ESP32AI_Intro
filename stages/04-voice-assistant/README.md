@@ -112,4 +112,7 @@ You have had a spoken conversation with your agent on the device and made one ch
 - Crackly or distorted voice: lower `SPEAKER_VOLUME` at the top of `src/main.cpp`.
 - Connects but silent: check the log line "Agent audio pcm_16000"; other formats need the
   agent's output format changed in the dashboard.
+- Not sure whether the problem is the agent or the device? `tools/agent_check.py` talks to
+  your agent from the laptop the same way the device does and prints what comes back
+  (needs `python3 -m pip install websockets`; uses about 20 seconds of credits).
 - See `fallback-prompts/04-voice-assistant.md`.
